@@ -172,13 +172,6 @@ const Register = () => {
         </form>
       </div>
     </div>
-          
-          <p style={{textAlign:'center', marginTop:'1rem', fontSize:'0.9rem'}}>
-            ¿Ya tienes tu cuenta habilitada? <span style={{color:'var(--arco-primary)', cursor:'pointer'}} onClick={() => navigate('/login')}>Ingresa aquí</span>
-          </p>
-        </form>
-      </div>
-    </div>
   )
 }
 

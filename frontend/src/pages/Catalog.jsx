@@ -130,10 +130,5 @@ const Catalog = ({ cart, setCart }) => {
     </div>
   )
 }
- )}
-      </div>
-    </div>
-  )
-}
 
 export default Catalog
