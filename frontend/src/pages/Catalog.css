@@ -1,0 +1,28 @@
+.catalog-container {
+  padding: 2rem 0;
+}
+
+.catalog-header {
+  margin-bottom: 3rem;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.25rem;
+  color: var(--arco-primary);
+  font-weight: 600;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}

@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Paleta Siembra Mirandina (Frescura y Tierra) */
+  --bg-base: #06090F;
+  --bg-panel: rgba(10, 15, 25, 0.75);
+  --bg-card: rgba(22, 32, 48, 0.6);
+  
+  /* Verde Orgánico Premium */
+  --miranda-primary: #10B981;
+  --miranda-accent: #34D399;
+  --miranda-earth: #78350F;
+  --miranda-glow: rgba(16, 185, 129, 0.3);
+  
+  /* Textos y Bordes */
+  --text-main: #FDFDFD;
+  --text-muted: #94A3B8;
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-active: rgba(16, 185, 129, 0.5);
+
+  --font-sans: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  /* Fondo radial tecnológico */
+  background-image: radial-gradient(circle at top right, rgba(16, 185, 129, 0.1), transparent 40%),
+                    radial-gradient(circle at bottom left, rgba(15, 23, 42, 1), transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Base de Glassmorfismo Reutilizable */
+.glass-panel {
+  background: var(--bg-panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-active);
+  box-shadow: 0 10px 40px var(--miranda-glow);
+}
+
+/* Tipografía Escalar */
+h1, h2, h3 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Botones Premium */
+.btn-primary {
+  background: var(--miranda-primary);
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 15px var(--miranda-glow);
+}
+
+.btn-primary:hover {
+  background: var(--arco-focus);
+  transform: scale(1.02);
+  box-shadow: 0 0 25px var(--arco-glow);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border-glass);
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover {
+  border-color: var(--miranda-primary);
+  color: var(--miranda-primary);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+/* Slogans Reutilizables */
+.slogan-banner {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--miranda-accent);
+  opacity: 0.8;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
