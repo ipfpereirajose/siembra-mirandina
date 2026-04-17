@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 class Settings(BaseSettings):
+    # Updated for Vercel deployment - 2026-04-17
     PROJECT_NAME: str = "Siembra Mirandina - Backend Agrotech"
     VERSION: str = "16042026"
     
