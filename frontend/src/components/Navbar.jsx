@@ -42,6 +42,11 @@ const Navbar = ({ cartCount, isAuthenticated, onLogout, onOpenCart, user }) => {
 
           {!isAuthenticated ? (
             <div className="navbar-menu" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              {/* Carrito para usuarios no autenticados */}
+              <div className="cart-indicator" onClick={onOpenCart} style={{ cursor: 'pointer', fontSize: '1.2rem' }}>
+                <span className="cart-badge">{cartCount}</span>
+              </div>
+              
               <button className="btn-outline" style={{ border: 'none', color: 'var(--text-main)', cursor: 'pointer' }} onClick={() => navigate('/login')}>
                 Ingresar
               </button>
@@ -51,6 +56,11 @@ const Navbar = ({ cartCount, isAuthenticated, onLogout, onOpenCart, user }) => {
             </div>
           ) : (
             <div className="navbar-menu" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              {/* Carrito para todos los usuarios autenticados */}
+              <div className="cart-indicator" onClick={onOpenCart} style={{ cursor: 'pointer', fontSize: '1.2rem' }}>
+                <span className="cart-badge">{cartCount}</span>
+              </div>
+
               {/* Campana de Notificaciones */}
               <div className="notif-bell" style={{ cursor: 'pointer', fontSize: '1.2rem' }}>
                 🔔 <span className="cart-badge">3</span>
@@ -64,13 +74,8 @@ const Navbar = ({ cartCount, isAuthenticated, onLogout, onOpenCart, user }) => {
                 <span style={{ cursor: 'pointer', color: 'var(--miranda-primary)', fontWeight: 'bold' }} onClick={() => navigate('/productor')}>🚜 Mi Producción</span>
               )}
 
-              {(userRole === 'CLIENTE_EMPRESA' || userRole === 'CLIENTE_NATURAL') && (
-                <>
-                  <span style={{ cursor: 'pointer', color: 'var(--miranda-primary)', fontWeight: 'bold' }} onClick={() => navigate('/cliente')}>👤 Mi Panel</span>
-                  <div className="cart-indicator" onClick={onOpenCart} style={{ marginLeft: '10px' }}>
-                    🛒 <span className="cart-badge">{cartCount}</span>
-                  </div>
-                </>
+              {(userRole === 'CLIENTE_EMPRESA' || userRole === 'CLIENTE_NATURAL' || userRole === 'CLIENTE') && (
+                <span style={{ cursor: 'pointer', color: 'var(--miranda-primary)', fontWeight: 'bold' }} onClick={() => navigate('/cliente')}>👤 Mi Panel</span>
               )}
 
               <div className="profile-btn" onClick={() => navigate('/perfil')} style={{ cursor: 'pointer' }}>
