@@ -9,16 +9,8 @@
       "destination": "api/index.py"
     },
     {
-      "source": "/assets/(.*)",
-      "destination": "/frontend/assets/$1"
-    },
-    {
-      "source": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|css|js)$",
-      "destination": "/frontend/$1"
-    },
-    {
       "source": "/(.*)",
-      "destination": "/frontend/index.html"
+      "destination": "/index.html"
     }
   ]
 }

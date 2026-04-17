@@ -18,7 +18,7 @@ const ProductCard = memo(({ product, onAdd }) => {
             className="product-image"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = 'https://via.placeholder.com/400x300?text=🌱';
+              e.target.src = 'https://placehold.co/400x300?text=🌱';
             }}
           />
         ) : (
