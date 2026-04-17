@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from functools import lru_cache
 
 class Settings(BaseSettings):
@@ -15,9 +16,11 @@ class Settings(BaseSettings):
     N8N_WEBHOOK_SALES_URL: str = ""
     N8N_WEBHOOK_INVENTORY_URL: str = ""
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = ConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        extra="allow"  # Permitir campos adicionales
+    )
 
 @lru_cache()
 def get_settings() -> Settings:
