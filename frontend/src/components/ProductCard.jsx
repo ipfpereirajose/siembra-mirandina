@@ -9,13 +9,20 @@ const ProductCard = ({ product, onAdd }) => {
 
   return (
     <div className="glass-card product-card">
-      <div className="product-image-placeholder" style={{
-        backgroundImage: product.imagen_url ? `url(${product.imagen_url})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}>
-        {!product.imagen_url && <span style={{ fontSize: '3rem' }}>🌱</span>}
+      <div className="product-image-container">
+        {product.imagen_url ? (
+          <img 
+            src={product.imagen_url} 
+            alt={product.nombre} 
+            className="product-image"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://via.placeholder.com/400x300?text=🌱';
+            }}
+          />
+        ) : (
+          <div className="product-image-fallback">🌱</div>
+        )}
       </div>
       
       <div className="product-content">
