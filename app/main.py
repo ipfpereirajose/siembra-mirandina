@@ -25,14 +25,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Registrar rutas en la app
-app.include_router(router_auth)
-app.include_router(router_admin)
-app.include_router(router_productos)
-app.include_router(router_pedidos)
-app.include_router(router_produccion)
-app.include_router(router_notificaciones)
-app.include_router(router_solicitudes)
+# Registrar rutas en la app con prefijo /api
+app.include_router(router_auth, prefix="/api")
+app.include_router(router_admin, prefix="/api")
+app.include_router(router_productos, prefix="/api")
+app.include_router(router_pedidos, prefix="/api")
+app.include_router(router_produccion, prefix="/api")
+app.include_router(router_notificaciones, prefix="/api")
+app.include_router(router_solicitudes, prefix="/api")
 
 @app.get("/")
 def read_root():
