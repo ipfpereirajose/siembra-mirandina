@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     # Credenciales de Supabase
     SUPABASE_URL: str
     SUPABASE_SERVICE_KEY: str
+    SUPABASE_ANON_KEY: str
 
     # Webhooks de N8N
     N8N_WEBHOOK_SALES_URL: str = ""
