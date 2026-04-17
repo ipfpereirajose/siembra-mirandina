@@ -4,6 +4,28 @@ const ProducerDashboard = () => {
   const [rubros, setRubros] = useState([]);
   const [misDeclaraciones, setMisDeclaraciones] = useState([]);
   const [selection, setSelection] = useState({ producto_id: '', nuevo_nombre: '', cantidad: '', unidad: 'Kg', precio: '' });
+  const [loading, setLoading] = useState(false);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001';
+
+  useEffect(() => {
+    fetch(`${API_URL}/productos/`)
+      .then(res => res.json())
+      .then(data => setRubros(data));
+    
+    cargarDeclaraciones();
+  }, []);
+
+  const cargarDeclaraciones = () => {
+    fetch(`${API_URL}/produccion/mis-declaraciones`, {
+        headers: {
+            'X-User-Id': '00000000-0000-0000-0000-000000000000',
+            'X-Empresa-Id': '00000000-0000-0000-0000-000000000000'
+        }
+    })
+      .then(res => res.json())
+      .then(data => setMisDeclaraciones(data));
+  };
 
   const handleDeclarar = async (e) => {
     e.preventDefault();
@@ -31,6 +53,17 @@ const ProducerDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const eliminarDeclaracion = async (id) => {
+     await fetch(`${API_URL}/produccion/${id}`, { 
+         method: 'DELETE',
+         headers: {
+            'X-User-Id': '00000000-0000-0000-0000-000000000000',
+            'X-Empresa-Id': '00000000-0000-0000-0000-000000000000'
+        }
+     });
+     cargarDeclaraciones();
   };
 
   return (
