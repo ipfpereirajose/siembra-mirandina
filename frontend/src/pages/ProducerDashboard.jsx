@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const ProducerDashboard = () => {
+const ProducerDashboard = ({ user }) => {
   const [rubros, setRubros] = useState([]);
   const [misDeclaraciones, setMisDeclaraciones] = useState([]);
   const [selection, setSelection] = useState({ producto_id: '', nuevo_nombre: '', cantidad: '', unidad: 'Kg', precio: '' });
@@ -19,8 +19,8 @@ const ProducerDashboard = () => {
   const cargarDeclaraciones = () => {
     fetch(`${API_URL}/produccion/mis-declaraciones`, {
         headers: {
-            'X-User-Id': '00000000-0000-0000-0000-000000000000',
-            'X-Empresa-Id': '00000000-0000-0000-0000-000000000000'
+            'X-User-Id': user.id,
+            'X-Empresa-Id': user.empresa_id
         }
     })
       .then(res => res.json())
@@ -35,8 +35,8 @@ const ProducerDashboard = () => {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
-            'X-User-Id': '00000000-0000-0000-0000-000000000000',
-            'X-Empresa-Id': '00000000-0000-0000-0000-000000000000'
+            'X-User-Id': user.id,
+            'X-Empresa-Id': user.empresa_id
         },
         body: JSON.stringify({
           producto_id: selection.producto_id === 'OTRO' ? null : selection.producto_id,
@@ -59,8 +59,8 @@ const ProducerDashboard = () => {
      await fetch(`${API_URL}/produccion/${id}`, { 
          method: 'DELETE',
          headers: {
-            'X-User-Id': '00000000-0000-0000-0000-000000000000',
-            'X-Empresa-Id': '00000000-0000-0000-0000-000000000000'
+            'X-User-Id': user.id,
+            'X-Empresa-Id': user.empresa_id
         }
      });
      cargarDeclaraciones();

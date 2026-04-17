@@ -6,6 +6,49 @@ from pydantic import BaseModel
 
 router_auth = APIRouter(prefix="/auth", tags=["Autenticación y Registro"])
 
+class LoginRequest(BaseModel):
+    correo: str
+    password: str
+
+@router_auth.post("/login")
+def login_cuenta(payload: LoginRequest):
+    """
+    Inicia sesión y recupera el perfil completo del usuario.
+    Regresa: { user: { id, rol, empresa_id, nombre_completo } }
+    """
+    supabase = get_supabase()
+    try:
+        # 1. Autenticar con Supabase
+        auth_res = supabase.auth.sign_in_with_password({
+            "email": payload.correo,
+            "password": payload.password
+        })
+        
+        user_id = auth_res.user.id
+        
+        # 2. Obtener Perfil y Empresa
+        res_perfil = supabase.table('perfiles').select('*, empresas(*)').eq('id', user_id).single().execute()
+        
+        if not res_perfil.data:
+            raise HTTPException(status_code=404, detail="Perfil no encontrado.")
+            
+        perfil = res_perfil.data
+        return {
+            "user": {
+                "id": user_id,
+                "rol": perfil["rol"],
+                "empresa_id": perfil["empresa_id"],
+                "nombre_completo": perfil["nombre_completo"]
+            },
+            "session": {
+                "access_token": auth_res.session.access_token,
+                "expires_in": auth_res.session.expires_in
+            }
+        }
+    except Exception as e:
+        # Error genérico para no dar pistas de qué falló (seguridad)
+        raise HTTPException(status_code=401, detail="Credenciales inválidas o error de sistema.")
+
 @router_auth.post("/register", response_model=RegisterResponse)
 def registrar_cuenta(payload: RegisterRequest):
     """

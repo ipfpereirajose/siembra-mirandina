@@ -1,0 +1,9 @@
+# Evitar que Vercel detecte estas carpetas como funciones o estáticos
+app/
+supabase/
+scratch/
+test_*.py
+seed_*.py
+requirements.txt
+crear_cuentas.py
+.env

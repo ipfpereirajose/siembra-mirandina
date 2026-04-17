@@ -9,21 +9,22 @@ import Register from './pages/Register'
 import AdminDashboard from './pages/AdminDashboard'
 import ProducerDashboard from './pages/ProducerDashboard'
 import Profile from './pages/Profile'
+import CustomerDashboard from './pages/CustomerDashboard'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [userRole, setUserRole] = useState(null) // ADMINISTRADOR, PRODUCTOR, CLIENTE_EMPRESA, etc.
+  const [user, setUser] = useState(null) // { id, rol, empresa_id, nombre_completo }
   const [cart, setCart] = useState([])
   const [isCartOpen, setIsCartOpen] = useState(false)
 
-  const handleLogin = (role = 'CLIENTE_NATURAL') => {
+  const handleLogin = (userData) => {
     setIsAuthenticated(true)
-    setUserRole(role)
+    setUser(userData)
   }
 
   const handleLogout = () => {
     setIsAuthenticated(false)
-    setUserRole(null)
+    setUser(null)
   }
 
   return (
@@ -31,7 +32,7 @@ function App() {
       <Navbar 
         cartCount={cart.length} 
         isAuthenticated={isAuthenticated} 
-        userRole={userRole} 
+        userRole={user?.rol} 
         onLogout={handleLogout} 
         onOpenCart={() => setIsCartOpen(true)} 
       />
@@ -49,16 +50,16 @@ function App() {
             isAuthenticated ? <Catalog cart={cart} setCart={setCart} /> : <Navigate to="/login" replace />
           } />
           <Route path="/cliente" element={
-            isAuthenticated ? <CustomerDashboard /> : <Navigate to="/login" replace />
+            isAuthenticated ? <CustomerDashboard user={user} /> : <Navigate to="/login" replace />
           } />
           <Route path="/productor" element={
-            isAuthenticated && userRole === 'PRODUCTOR' ? <ProducerDashboard /> : <Navigate to="/login" replace />
+            isAuthenticated && user?.rol === 'PRODUCTOR' ? <ProducerDashboard user={user} /> : <Navigate to="/login" replace />
           } />
           <Route path="/admin" element={
-            isAuthenticated && userRole === 'ADMINISTRADOR' ? <AdminDashboard /> : <Navigate to="/login" replace />
+            isAuthenticated && user?.rol === 'ADMINISTRADOR' ? <AdminDashboard user={user} /> : <Navigate to="/login" replace />
           } />
           <Route path="/perfil" element={
-            isAuthenticated ? <Profile /> : <Navigate to="/login" replace />
+            isAuthenticated ? <Profile user={user} /> : <Navigate to="/login" replace />
           } />
         </Routes>
       </main>

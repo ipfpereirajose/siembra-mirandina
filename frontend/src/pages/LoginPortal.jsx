@@ -5,23 +5,39 @@ import './LoginPortal.css'
 const LoginPortal = ({ onLogin }) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setError(null)
+    setLoading(true)
     
-    // Convertir el input a minúsculas y quitar espacios invisibles para la comparación
-    const correoLimpio = email.trim().toLowerCase();
+    const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001'
     
-    // Mocking el salto para admin vs cliente.
-    const esAdmin = (correoLimpio === 'ipfpereirajose@gmail.com' || correoLimpio === 'fullstacksystems.01@gmail.com');
-    onLogin(esAdmin);
-
-    // Redirección forzada segura
-    if(esAdmin) {
-      navigate('/admin')
-    } else {
-      navigate('/b2b')
+    try {
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo: email.trim(), password })
+      })
+      
+      const data = await res.json()
+      
+      if(res.ok) {
+        onLogin(data.user)
+        // Redirección basada en rol real
+        if(data.user.rol === 'ADMINISTRADOR') navigate('/admin')
+        else if(data.user.rol === 'PRODUCTOR') navigate('/productor')
+        else navigate('/b2b')
+      } else {
+        setError(data.detail || "Error al iniciar sesión. Verifique sus credenciales.")
+      }
+    } catch(err) {
+      setError("Fallo al conectar con el servidor de Siembra Mirandina.")
+    } finally {
+      setLoading(false)
     }
   }
 
