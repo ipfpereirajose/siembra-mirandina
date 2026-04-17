@@ -66,6 +66,6 @@ const App = memo(() => {
       </main>
     </BrowserRouter>
   )
-}
+})
 
 export default App
