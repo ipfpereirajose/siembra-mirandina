@@ -2,9 +2,10 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Navbar.css'
 
-const Navbar = ({ cartCount, isAuthenticated, isSuperAdmin, onLogout, onOpenCart, userRole }) => {
+const Navbar = ({ cartCount, isAuthenticated, onLogout, onOpenCart, user }) => {
   const navigate = useNavigate()
   const [showContact, setShowContact] = React.useState(false)
+  const userRole = user?.rol;
 
   return (
     <nav className="navbar glass-panel">
@@ -72,7 +73,9 @@ const Navbar = ({ cartCount, isAuthenticated, isSuperAdmin, onLogout, onOpenCart
                 </>
               )}
 
-              <div className="profile-btn" onClick={() => navigate('/perfil')} style={{ cursor: 'pointer' }}>👤 Perfil</div>
+              <div className="profile-btn" onClick={() => navigate('/perfil')} style={{ cursor: 'pointer' }}>
+                👤 {user?.nombre_completo || 'Perfil'}
+              </div>
 
               <button className="btn-outline" style={{ padding: '8px 16px' }} onClick={() => {
                   onLogout();

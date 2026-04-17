@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import './Catalog.css'
 
-const CustomerDashboard = () => {
+const CustomerDashboard = ({ user }) => {
   const [historial, setHistorial] = useState([])
   const [rubros, setRubros] = useState([])
   const [showPedidoForm, setShowPedidoForm] = useState(false)
@@ -19,8 +19,8 @@ const CustomerDashboard = () => {
     fetch(`${API}/pedidos/historial`, {
       method: 'GET',
       headers: {
-        'x-user-id': '00000000-0000-0000-0000-000000000000',
-        'x-empresa-id': '00000000-0000-0000-0000-000000000000'
+        'x-user-id': user.id,
+        'x-empresa-id': user.empresa_id
       }
     })
     .then(res => res.json())
@@ -35,7 +35,7 @@ const CustomerDashboard = () => {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'x-user-id': '00000000-0000-0000-0000-000000000000'
+            'x-user-id': user.id
           },
           body: JSON.stringify({
              producto_id: pedido.producto_id,

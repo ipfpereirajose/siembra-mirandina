@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Profile = () => {
+const Profile = ({ user }) => {
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({ nombre_completo: '', telefono: '', direccion_fiscal: '', password: '' });
   const [loading, setLoading] = useState(true);
@@ -8,8 +8,8 @@ const Profile = () => {
 
   const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001';
   const headers = {
-    'X-User-Id': '00000000-0000-0000-0000-000000000000',
-    'X-Empresa-Id': '00000000-0000-0000-0000-000000000000'
+    'X-User-Id': user.id,
+    'X-Empresa-Id': user.empresa_id
   };
 
   useEffect(() => {

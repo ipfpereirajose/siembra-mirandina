@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import './Catalog.css' // Reutilizar paleta general
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ user }) => {
   const [stats, setStats] = useState(null)
   const [ofertaDemanda, setOfertaDemanda] = useState({ solicitudes: [], inventario_actual: [] })
   const [loading, setLoading] = useState(true)
@@ -18,8 +18,8 @@ const AdminDashboard = () => {
   const cargarTodo = async () => {
     try {
       const [resStats, resOD] = await Promise.all([
-        fetch(`${API}/admin/dashboard-stats`, { headers: { 'x-user-id': 'admin', 'x-empresa-id': 'admin' } }),
-        fetch(`${API}/solicitudes/oferta-demanda`, { headers: { 'x-user-id': 'admin', 'x-empresa-id': 'admin' } })
+        fetch(`${API}/admin/dashboard-stats`, { headers: { 'x-user-id': user.id, 'x-empresa-id': user.empresa_id } }),
+        fetch(`${API}/solicitudes/oferta-demanda`, { headers: { 'x-user-id': user.id, 'x-empresa-id': user.empresa_id } })
       ])
       
       const dataStats = await resStats.json()
