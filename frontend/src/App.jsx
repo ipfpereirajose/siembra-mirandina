@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback, memo } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Catalog from './pages/Catalog'
@@ -11,21 +11,22 @@ import ProducerDashboard from './pages/ProducerDashboard'
 import Profile from './pages/Profile'
 import CustomerDashboard from './pages/CustomerDashboard'
 
-function App() {
+const App = memo(() => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null) // { id, rol, empresa_id, nombre_completo }
   const [cart, setCart] = useState([])
   const [isCartOpen, setIsCartOpen] = useState(false)
 
-  const handleLogin = (userData) => {
+  const handleLogin = useCallback((userData) => {
     setIsAuthenticated(true)
     setUser(userData)
-  }
+  }, [])
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setIsAuthenticated(false)
     setUser(null)
-  }
+    setCart([]) // Limpiar carrito al hacer logout
+  }, [])
 
   return (
     <BrowserRouter>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './CartSidebar.css'
 
 const CartSidebar = ({ cart, setCart, onClose }) => {
@@ -9,6 +9,12 @@ const CartSidebar = ({ cart, setCart, onClose }) => {
 
   // Verificar si hay productos en el carrito
   const hasItems = cart.length > 0
+
+  // Limpiar estado de éxito cuando se cierra el sidebar
+  useEffect(() => {
+    if (!onClose) return
+    setSuccessId(null)
+  }, [onClose])
 
   const handleCheckout = async () => {
     setLoading(true)

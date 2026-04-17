@@ -31,18 +31,27 @@ const Home = ({ cart, setCart }) => {
 
   useEffect(() => {
     const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001'
+    setLoading(true)
+    
     fetch(`${API_URL}/productos`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+        }
+        return res.json()
+      })
       .then(data => {
         setProductos(data)
         setLoading(false)
       })
       .catch(err => {
-        console.error("Error", err)
+        console.error("Error cargando productos:", err)
         setLoading(false)
       })
+  }, [])
 
-    // Auto-play interval para el slide
+  // Auto-play interval para el slide con cleanup
+  useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % heroSlides.length)
     }, 5000)

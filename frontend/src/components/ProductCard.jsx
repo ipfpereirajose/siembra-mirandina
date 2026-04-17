@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, memo } from 'react'
 import './ProductCard.css'
 
-const ProductCard = ({ product, onAdd }) => {
+const ProductCard = memo(({ product, onAdd }) => {
   const [qty, setQty] = useState(1)
   const [showSuccess, setShowSuccess] = useState(false)
   
@@ -75,4 +75,4 @@ const ProductCard = ({ product, onAdd }) => {
   )
 }
 
-export default ProductCard
+export default memo(ProductCard)
