@@ -3,6 +3,7 @@ import './ProductCard.css'
 
 const ProductCard = ({ product, onAdd }) => {
   const [qty, setQty] = useState(1)
+  const [showSuccess, setShowSuccess] = useState(false)
   
   const stockInfo = product.inventario || { stock_disponible: 0 }
   const inStock = stockInfo.stock_disponible > 0
@@ -56,8 +57,16 @@ const ProductCard = ({ product, onAdd }) => {
               disabled={!inStock}
               className="qty-input glass-input"
             />
-            <button className="btn-primary" onClick={() => onAdd(product, qty)} disabled={!inStock}>
-              Añadir
+            <button 
+              className="btn-primary" 
+              onClick={() => {
+                onAdd(product, qty)
+                setShowSuccess(true)
+                setTimeout(() => setShowSuccess(false), 2000)
+              }} 
+              disabled={!inStock}
+            >
+              {showSuccess ? '✓ Agregado' : 'Añadir'}
             </button>
           </div>
         </div>

@@ -7,6 +7,9 @@ const CartSidebar = ({ cart, setCart, onClose }) => {
 
   const total = cart.reduce((acc, item) => acc + (item.product.precio_base_usd * item.quantity), 0)
 
+  // Verificar si hay productos en el carrito
+  const hasItems = cart.length > 0
+
   const handleCheckout = async () => {
     setLoading(true)
     const payload = {
@@ -65,7 +68,14 @@ const CartSidebar = ({ cart, setCart, onClose }) => {
           )}
           
           {!successId && cart.length === 0 && (
-            <p className="text-muted" style={{textAlign:'center', marginTop: '2rem'}}>El carrito está vacío.</p>
+            <div style={{textAlign:'center', marginTop: '2rem'}}>
+              <p className="text-muted">El carrito está vacío.</p>
+              <p className="text-muted" style={{fontSize: '0.9rem', marginTop: '1rem'}}>
+                🛒 <strong>Agrega productos</strong> para continuar. 
+                <br />
+                <span style={{color: 'var(--arco-primary)', cursor: 'pointer'}}>¿Ya tienes cuenta? Inicia sesión</span>
+              </p>
+            </div>
           )}
 
           {!successId && cart.map((item, idx) => (
@@ -89,7 +99,20 @@ const CartSidebar = ({ cart, setCart, onClose }) => {
               <span>Total Estimado (USD)</span>
               <span style={{fontSize: '1.5rem', fontWeight:'bold', color: 'var(--arco-primary)'}}>${total.toFixed(2)}</span>
             </div>
-            <button className="btn-primary" style={{width: '100%', padding: '1rem'}} onClick={handleCheckout} disabled={loading}>
+            <button 
+              className="btn-primary" 
+              style={{width: '100%', padding: '1rem'}} 
+              onClick={() => {
+                // Para usuarios no registrados, redirigir al login con mensaje
+                alert('Para confirmar tu orden, por favor regístrate o inicia sesión primero.')
+                onClose()
+                // Redirigir al login después de cerrar el sidebar
+                setTimeout(() => {
+                  window.location.href = '/login'
+                }, 300)
+              }} 
+              disabled={loading}
+            >
               {loading ? 'Procesando Venta Segura...' : 'Confirmar Orden B2B'}
             </button>
           </div>

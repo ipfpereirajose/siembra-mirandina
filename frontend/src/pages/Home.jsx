@@ -10,6 +10,19 @@ const Home = ({ cart, setCart }) => {
   const [currentSlide, setCurrentSlide] = useState(0)
   const navigate = useNavigate()
 
+  // Cargar carrito desde localStorage al iniciar
+  useEffect(() => {
+    const savedCart = localStorage.getItem('tempCart')
+    if (savedCart) {
+      setCart(JSON.parse(savedCart))
+    }
+  }, [setCart])
+
+  // Guardar carrito en localStorage cuando cambie
+  useEffect(() => {
+    localStorage.setItem('tempCart', JSON.stringify(cart))
+  }, [cart])
+
   const heroSlides = [
     { img: "https://loremflickr.com/1200/400/farming?lock=101", title: "Suministros Agrícolas Mayoristas", desc: "Mejores precios netos para clientes B2B. Aprobación y verificación fiscal garantizada." },
     { img: "https://loremflickr.com/1200/400/tractor?lock=102", title: "Catálogo de Maquinaria", desc: "Equipos de última generación para precisión 100% industrial, listos en bodega." },
@@ -36,9 +49,21 @@ const Home = ({ cart, setCart }) => {
     return () => clearInterval(interval)
   }, [])
 
-  const handleInterceptAction = () => {
-    // Redirige al login. En el futuro puede guardar intención en localStorage.
-    navigate('/login')
+  const handleAddToCart = (product) => {
+    // Agregar producto al carrito sin necesidad de login
+    const existingItem = cart.find(item => item.id === product.id)
+    
+    if (existingItem) {
+      // Si ya existe, aumentar cantidad
+      setCart(cart.map(item => 
+        item.id === product.id 
+          ? { ...item, quantity: (item.quantity || 1) + 1 }
+          : item
+      ))
+    } else {
+      // Agregar nuevo producto
+      setCart([...cart, { ...product, quantity: 1 }])
+    }
   }
 
   const productosFiltrados = productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -106,9 +131,8 @@ const Home = ({ cart, setCart }) => {
       ) : (
         <div className="products-grid">
           {productosFiltrados.map(p => (
-            <div key={p.id} onClick={handleInterceptAction} style={{ cursor: 'pointer' }}>
-              {/* Le pasamos un onAdd falso para que el boton redirija al B2B de forma natural */}
-              <ProductCard product={p} onAdd={handleInterceptAction} />
+            <div key={p.id} style={{ cursor: 'pointer' }}>
+              <ProductCard product={p} onAdd={() => handleAddToCart(p)} />
             </div>
           ))}
           {productosFiltrados.length === 0 && (
