@@ -72,7 +72,8 @@ const ProductCard = memo(({ product, onAdd }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+});
+
 
 export default memo(ProductCard)
