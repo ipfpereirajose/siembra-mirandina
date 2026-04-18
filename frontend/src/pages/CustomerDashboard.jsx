@@ -172,6 +172,23 @@ const CustomerDashboard = ({ user }) => {
              </div>
           </div>
        )}
+
+       {/* Banner Fijo de Pedidos Especiales (Restaurado para mayor visibilidad) */}
+       {!showPedidoForm && (
+         <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', marginTop: '3rem', borderTop: '2px solid var(--miranda-primary)' }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🚛</div>
+            <h3 style={{ color: 'var(--miranda-primary)' }}>¿Necesitas volúmenes especiales o rubros fuera de catálogo?</h3>
+            <p className="text-muted" style={{ marginBottom: '2rem', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
+              Utiliza nuestro canal de requisición especial. Especifica el rubro, la cantidad y nos encargaremos de cotizarte el mejor precio nacional.
+            </p>
+            <button className="btn-primary" onClick={() => {
+              setShowPedidoForm(true);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }} style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
+              🚀 Iniciar Requisición Especial
+            </button>
+         </div>
+       )}
     </div>
   )
 }
