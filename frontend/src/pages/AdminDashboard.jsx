@@ -6,7 +6,6 @@ const AdminDashboard = ({ user }) => {
   const [stats, setStats] = useState(null)
   const [ofertaDemanda, setOfertaDemanda] = useState({ solicitudes: [], inventario_actual: [] })
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('STATS') // STATS | INVENTARIO | PEDIDOS_ESP
   const [showSupport, setShowSupport] = useState(false)
 
   const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001'
@@ -84,122 +83,112 @@ const AdminDashboard = ({ user }) => {
         </div>
       </div>
 
-      {/* TABS DE NAVEGACIÓN */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-         <button className={`btn-outline ${activeTab === 'STATS' ? 'miranda-tab-active' : ''}`} onClick={() => setActiveTab('STATS')}>📊 Estadísticas</button>
-         <button className={`btn-outline ${activeTab === 'INVENTARIO' ? 'miranda-tab-active' : ''}`} onClick={() => setActiveTab('INVENTARIO')}>📦 Inventario Real-Time</button>
-         <button className={`btn-outline ${activeTab === 'PEDIDOS_ESP' ? 'miranda-tab-active' : ''}`} onClick={() => setActiveTab('PEDIDOS_ESP')}>📝 Pedidos Personalizados</button>
-      </div>
-
-      {activeTab === 'STATS' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '2rem' }}>
-          <div className="glass-panel" style={{ padding: '2rem' }}>
+      {/* BLOQUE ESTADÍSTICAS Y VENTAS */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '2rem', marginBottom: '3rem' }}>
+         <div className="glass-panel" style={{ padding: '2rem' }}>
             <h3>Ventas Consolidadas</h3>
             <div style={{ width: '100%', height: 350 }}>
-              <ResponsiveContainer>
-                <BarChart data={stats.grafico_ventas}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="mes" stroke="var(--text-muted)" />
-                  <YAxis stroke="var(--text-muted)" />
-                  <Tooltip contentStyle={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--miranda-primary)' }} />
-                  <Bar dataKey="ventas" name="Monto (USD)" fill="var(--miranda-primary)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+               <ResponsiveContainer>
+                  <BarChart data={stats?.grafico_ventas || []}>
+                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                     <XAxis dataKey="mes" stroke="var(--text-muted)" />
+                     <YAxis stroke="var(--text-muted)" />
+                     <Tooltip contentStyle={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--miranda-primary)' }} />
+                     <Bar dataKey="ventas" name="Monto (USD)" fill="var(--miranda-primary)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+               </ResponsiveContainer>
             </div>
-          </div>
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
-              <h3>Alertas de Abastecimiento</h3>
-              {stats.top_productos.map((p, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--border-glass)' }}>
+         </div>
+         <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <h3>Alertas de Abastecimiento</h3>
+            {(stats?.top_productos || []).map((p, idx) => (
+               <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--border-glass)' }}>
                   <span>{p.nombre}</span>
                   <span style={{ fontWeight: 'bold', color: p.stock_restante < 10 ? '#ef4444' : '#34D399' }}>{p.stock_restante} kg</span>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
+               </div>
+            ))}
+         </div>
+      </div>
 
-      {activeTab === 'INVENTARIO' && (
-        <div className="glass-panel" style={{ padding: '2rem' }}>
-           <h3>Inventario Centralizado</h3>
-           <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-              <thead>
-                 <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-glass)' }}>
-                    <th style={{ padding: '12px' }}>Producto</th>
-                    <th style={{ padding: '12px' }}>Stock Global</th>
-                    <th style={{ padding: '12px' }}>Estado</th>
-                    <th style={{ padding: '12px' }}>Última Actualización</th>
-                 </tr>
-              </thead>
-              <tbody>
-                 {ofertaDemanda.inventario_actual.map((item, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-glass)' }}>
-                       <td style={{ padding: '12px' }}>{item.productos?.nombre}</td>
-                       <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.stock_disponible} kg</td>
-                       <td style={{ padding: '12px' }}>
-                          <span style={{ 
-                             padding: '4px 8px', 
-                             borderRadius: '4px', 
-                             fontSize: '0.75rem',
-                             background: item.stock_disponible > 50 ? 'rgba(52, 211, 153, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                             color: item.stock_disponible > 50 ? '#34D399' : '#ef4444'
-                          }}>
-                             {item.stock_disponible > 50 ? 'SUFICIENTE' : 'BAJO'}
-                          </span>
-                       </td>
-                       <td style={{ padding: '12px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(item.ultima_actualizacion).toLocaleString()}</td>
-                    </tr>
-                 ))}
-              </tbody>
-           </table>
-        </div>
-      )}
+      {/* BLOQUE REQUISICIONES / SUBASTAS (MOVEMOS AL MEDIO COMO PIDIO EL USUARIO) */}
+      <div className="glass-panel" style={{ padding: '2rem', marginBottom: '3rem' }}>
+         <h3>Evaluador Fase 2: Requisiciones y Subastas B2B</h3>
+         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+            {ofertaDemanda.solicitudes.length === 0 ? <p className="text-muted">Sin flujo actual.</p> : (
+               ofertaDemanda.solicitudes.map(sol => (
+                  <div key={sol.id} className="glass-card fade-in" style={{ padding: '1.5rem', borderLeft: sol.estado === 'PENDIENTE' ? '4px solid var(--miranda-primary)' : sol.estado === 'PAGO_POR_VERIFICAR' ? '4px solid #34D399' : sol.estado === 'EJECUTAR' ? '4px solid #10b981' : '4px solid #F59E0B' }}>
+                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{sol.productos?.nombre}</div>
+                     <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Cliente: {sol.perfiles?.nombre_completo}</div>
+                     <div style={{ marginTop: '0.5rem', fontSize: '1.2rem', fontWeight: 'bold' }}>Solicita: {sol.cantidad} {sol.unidad_medida}</div>
+                     <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>ESTADO: <strong style={{ color: 'var(--arco-primary)' }}>{sol.estado}</strong></p>
+                     
+                     {sol.estado === 'PAGO_POR_VERIFICAR' && sol.url_comprobante && (
+                        <div style={{ marginTop: '1rem', background: 'rgba(52,211,153,0.1)', padding: '10px', borderRadius: '8px' }}>
+                           <p style={{fontSize:'0.8rem', marginBottom:'5px'}}>💳 Comprobante Anexo:</p>
+                           <a href={sol.url_comprobante} target="_blank" rel="noreferrer" style={{color: '#34D399', fontSize: '0.85rem', wordBreak: 'break-all'}}>{sol.url_comprobante.substring(0, 40)}...</a>
+                        </div>
+                     )}
 
-      {activeTab === 'PEDIDOS_ESP' && (
-        <div className="glass-panel" style={{ padding: '2rem' }}>
-           <h3>Evaluador Fase 2: Requisiciones y Subastas</h3>
-           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
-              {ofertaDemanda.solicitudes.length === 0 ? <p className="text-muted">Sin flujo actual.</p> : (
-                 ofertaDemanda.solicitudes.map(sol => (
-                    <div key={sol.id} className="glass-card" style={{ padding: '1.5rem', borderLeft: sol.estado === 'PENDIENTE' ? '4px solid var(--miranda-primary)' : sol.estado === 'PAGO_POR_VERIFICAR' ? '4px solid #34D399' : '4px solid #F59E0B' }}>
-                       <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{sol.productos?.nombre}</div>
-                       <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Cliente: {sol.perfiles?.nombre_completo}</div>
-                       <div style={{ marginTop: '0.5rem', fontSize: '1.2rem', fontWeight: 'bold' }}>Solicita: {sol.cantidad} {sol.unidad_medida}</div>
-                       <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>ESTADO: <strong style={{ color: 'var(--arco-primary)' }}>{sol.estado}</strong></p>
-                       
-                       {sol.estado === 'PAGO_POR_VERIFICAR' && sol.url_comprobante && (
-                          <div style={{ marginTop: '1rem', background: 'rgba(52,211,153,0.1)', padding: '10px', borderRadius: '8px' }}>
-                             <p style={{fontSize:'0.8rem', marginBottom:'5px'}}>💳 Comprobante Anexo:</p>
-                             <a href={sol.url_comprobante} target="_blank" rel="noreferrer" style={{color: '#34D399', fontSize: '0.85rem', wordBreak: 'break-all'}}>{sol.url_comprobante.substring(0, 40)}...</a>
-                          </div>
-                       )}
+                     <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {sol.estado === 'PENDIENTE' && (
+                           <>
+                            <button className="btn-primary" style={{ flex: 1, fontSize: '0.75rem', padding: '8px' }} onClick={() => cambiarEstado(sol.id, 'CONTRA_OFERTA')}>✅ Abastecer Central (Generar Contra.)</button>
+                            <button className="btn-outline" style={{ flex: 1, fontSize: '0.75rem', padding: '8px' }} onClick={() => cambiarEstado(sol.id, 'SUBASTA_ABIERTA')}>📡 Auxilio a Productores</button>
+                           </>
+                        )}
+                        
+                        {sol.estado === 'SUBASTA_ABIERTA' && (
+                           <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem' }} onClick={() => cambiarEstado(sol.id, 'CONTRA_OFERTA')}>Cerrar Subasta & Mover Contra-Oferta</button>
+                        )}
 
-                       <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                          {sol.estado === 'PENDIENTE' && (
-                             <>
-                              <button className="btn-primary" style={{ flex: 1, fontSize: '0.75rem', padding: '8px' }} onClick={() => cambiarEstado(sol.id, 'CONTRA_OFERTA')}>✅ Abastecer Central (Generar Contra.)</button>
-                              <button className="btn-outline" style={{ flex: 1, fontSize: '0.75rem', padding: '8px' }} onClick={() => cambiarEstado(sol.id, 'SUBASTA_ABIERTA')}>📡 Auxilio a Productores</button>
-                             </>
-                          )}
-                          
-                          {sol.estado === 'SUBASTA_ABIERTA' && (
-                             <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem' }} onClick={() => cambiarEstado(sol.id, 'CONTRA_OFERTA')}>Cerrar Subasta & Mover Contra-Oferta</button>
-                          )}
+                        {sol.estado === 'PAGO_POR_VERIFICAR' && (
+                           <button className="btn-primary" style={{ width: '100%', background: '#34D399', color: 'black', fontWeight: 'bold', fontSize: '0.85rem' }} onClick={() => cambiarEstado(sol.id, 'EJECUTAR')}>🛠 Ejecutar Pedido & Notificar Despachos</button>
+                        )}
 
-                          {sol.estado === 'PAGO_POR_VERIFICAR' && (
-                             <button className="btn-primary" style={{ width: '100%', background: '#34D399', color: 'black', fontWeight: 'bold', fontSize: '0.85rem' }} onClick={() => cambiarEstado(sol.id, 'EJECUTAR')}>🛠 Ejecutar Pedido & Notificar Despachos</button>
-                          )}
+                        {sol.estado === 'EJECUTAR' && (
+                           <button className="btn-outline" style={{ width: '100%', fontSize: '0.85rem', color: '#10b981', borderColor: '#10b981' }} disabled>Orden En Proceso de Logística</button>
+                        )}
+                     </div>
+                  </div>
+               ))
+            )}
+         </div>
+      </div>
 
-                          {sol.estado === 'EJECUTAR' && (
-                             <button className="btn-outline" style={{ width: '100%', fontSize: '0.85rem', color: '#10b981', borderColor: '#10b981' }} disabled>Orden En Proceso de Logística</button>
-                          )}
-                       </div>
-                    </div>
-                 ))
-              )}
-           </div>
-        </div>
-      )}
+      {/* BLOQUE INVENTARIO SENCILLO (ANTES PESTAÑA) */}
+      <div className="glass-panel" style={{ padding: '2rem' }}>
+         <h3>Inventario Centralizado</h3>
+         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+            <thead>
+               <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-glass)' }}>
+                  <th style={{ padding: '12px' }}>Producto</th>
+                  <th style={{ padding: '12px' }}>Stock Global</th>
+                  <th style={{ padding: '12px' }}>Estado</th>
+                  <th style={{ padding: '12px' }}>Última Actualización</th>
+               </tr>
+            </thead>
+            <tbody>
+               {ofertaDemanda.inventario_actual.map((item, idx) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid var(--border-glass)' }}>
+                     <td style={{ padding: '12px' }}>{item.productos?.nombre}</td>
+                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.stock_disponible} kg</td>
+                     <td style={{ padding: '12px' }}>
+                        <span style={{ 
+                           padding: '4px 8px', 
+                           borderRadius: '4px', 
+                           fontSize: '0.75rem',
+                           background: item.stock_disponible > 50 ? 'rgba(52, 211, 153, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                           color: item.stock_disponible > 50 ? '#34D399' : '#ef4444'
+                        }}>
+                           {item.stock_disponible > 50 ? 'SUFICIENTE' : 'BAJO'}
+                        </span>
+                     </td>
+                     <td style={{ padding: '12px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(item.ultima_actualizacion).toLocaleString()}</td>
+                  </tr>
+               ))}
+            </tbody>
+         </table>
+      </div>
 
     </div>
   )

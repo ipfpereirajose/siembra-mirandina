@@ -71,7 +71,7 @@ const App = memo(() => {
         <Routes>
           <Route path="/" element={<Home cart={cart} setCart={setCart} />} />
           <Route path="/login" element={
-            !isAuthenticated ? <LoginPortal onLogin={handleLogin} /> : <Navigate to="/b2b" replace />
+            !isAuthenticated ? <LoginPortal onLogin={handleLogin} /> : <Navigate to={user?.rol === 'ADMINISTRADOR' ? '/admin' : user?.rol === 'PRODUCTOR' ? '/productor' : '/b2b'} replace />
           } />
           <Route path="/register" element={<Register />} />
           <Route path="/b2b" element={<Catalog cart={cart} setCart={setCart} />} />
