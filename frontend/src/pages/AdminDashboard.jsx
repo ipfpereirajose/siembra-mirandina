@@ -31,6 +31,8 @@ const AdminDashboard = ({ user }) => {
       setLoading(false)
     } catch (err) {
       console.error("Error Admin", err)
+    } finally {
+      setLoading(false)
     }
   }
 
