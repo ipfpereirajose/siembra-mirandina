@@ -41,7 +41,12 @@ const ProductCard = memo(({ product, onAdd }) => {
         
         <div className="product-footer">
           <div className="product-price">
-            ${product.precio_base_usd.toFixed(2)} <span style={{fontSize: '0.75rem', fontWeight:'normal', color: 'var(--text-muted)'}}>USD</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+              ${product.precio_base_usd.toFixed(2)} 
+              <span style={{fontSize: '0.85rem', fontWeight:'normal', color: 'var(--text-muted)'}}>
+                USD / {product.unidad_medida || 'Unidad'}
+              </span>
+            </div>
             <div style={{ fontSize: '0.65rem', color: 'var(--miranda-accent)', marginTop: '2px', opacity: 0.8 }}>
               * Precio referencial a tasa BCV
             </div>

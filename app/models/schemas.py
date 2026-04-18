@@ -19,6 +19,7 @@ class ProductoBase(BaseModel):
     descripcion_tecnica: Optional[str] = None
     imagen_url: Optional[str] = None
     precio_base_usd: float
+    unidad_medida: str = "Unidad"
     activo: bool = True
 
 class InventarioInfo(BaseModel):
@@ -31,6 +32,7 @@ class ProductoResponse(BaseModel):
     nombre: str
     descripcion_tecnica: Optional[str] = None
     precio_base_usd: float
+    unidad_medida: str = "Unidad"
     imagen_url: Optional[str] = None
     inventario: Optional[InventarioInfo] = None
     # Precio dinámico tras calcular la lista de precios B2B (si existe)

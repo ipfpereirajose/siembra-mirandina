@@ -93,7 +93,7 @@ const CartSidebar = ({ cart, setCart, isAuthenticated, onClose }) => {
               <div className="cart-item-info">
                 <h4>{item.product.nombre}</h4>
                 <div className="text-muted" style={{fontSize: '0.85rem', display: 'flex', gap: '10px', alignItems: 'center'}}>
-                  {item.quantity} x ${item.product.precio_base_usd?.toFixed(2)}
+                  {item.quantity} {item.product.unidad_medida || 'Unidad(es)'} x ${item.product.precio_base_usd?.toFixed(2)}
                   <span 
                     style={{color: 'var(--acento-alerta, #ef4444)', cursor: 'pointer', padding: '2px 6px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '4px'}}
                     onClick={() => setCart(prev => prev.filter((_, i) => i !== idx))}

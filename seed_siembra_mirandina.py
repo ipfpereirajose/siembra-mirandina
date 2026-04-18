@@ -41,18 +41,28 @@ def seed_catalog():
     res_cats = supabase.table('categorias').insert(cats).execute()
     cat_map = {c['nombre']: c['id'] for c in res_cats.data}
 
-    # 2. Preparar Productos (Catálogo Expandido)
+    # 2. Preparar Productos (Catálogo Expandido y Dividido por Unidades)
     productos_data = [
-        {"nombre": "Papa Granola", "cat": "Raices y Tuberculos", "sku": "RUB-PAPA", "img": "https://images.unsplash.com/photo-1518977676601-b53f02bad67b?auto=format&fit=crop&q=80&w=800", "p": 30.0},
-        {"nombre": "Tomate Perita", "cat": "Hortalizas", "sku": "RUB-TOMA", "img": "https://images.unsplash.com/photo-1546473530-9a31436a30c5?auto=format&fit=crop&q=80&w=800", "p": 25.0},
-        {"nombre": "Caraotas Negras", "cat": "Viveres y Granos", "sku": "RUB-CARA", "img": "https://images.unsplash.com/photo-1551462147-37885abb3e4a?auto=format&fit=crop&q=80&w=800", "p": 75.0},
-        {"nombre": "Cebolla Blanca", "cat": "Hortalizas", "sku": "RUB-CEBO", "img": "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&q=80&w=800", "p": 18.0},
-        {"nombre": "Pimenton Rojo", "cat": "Hortalizas", "sku": "RUB-PIME", "img": "https://images.unsplash.com/photo-1563513307168-a5105ebf16ee?auto=format&fit=crop&q=80&w=800", "p": 15.0},
-        {"nombre": "Yuca Dulce", "cat": "Raices y Tuberculos", "sku": "RUB-YUCA", "img": "https://images.unsplash.com/photo-1629115913220-4a88f7b57b9e?auto=format&fit=crop&q=80&w=800", "p": 20.0},
-        {"nombre": "Lechuga Criolla", "cat": "Verdes y Hierbas", "sku": "RUB-LECH", "img": "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?auto=format&fit=crop&q=80&w=800", "p": 12.0},
-        {"nombre": "Cebollin", "cat": "Verdes y Hierbas", "sku": "RUB-CEBN", "img": "https://images.unsplash.com/photo-1587483166752-bf5df5dca507?auto=format&fit=crop&q=80&w=800", "p": 10.0},
-        {"nombre": "Ajo Morado", "cat": "Hortalizas", "sku": "RUB-AJOM", "img": "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?auto=format&fit=crop&q=80&w=800", "p": 25.0},
-        {"nombre": "Remolacha", "cat": "Hortalizas", "sku": "RUB-REMO", "img": "https://images.unsplash.com/photo-1528113033602-ae2426da1bb3?auto=format&fit=crop&q=80&w=800", "p": 20.0}
+        {"nombre": "Papa Granola (Saco 40kg)", "cat": "Raices y Tuberculos", "sku": "RUB-PAPA-SAC", "img": "https://images.unsplash.com/photo-1518977676601-b53f02bad67b?auto=format&fit=crop&q=80&w=800", "p": 30.0, "unidad": "Sacos"},
+        {"nombre": "Papa Granola (Detal)", "cat": "Raices y Tuberculos", "sku": "RUB-PAPA-KG", "img": "https://images.unsplash.com/photo-1518977676601-b53f02bad67b?auto=format&fit=crop&q=80&w=800", "p": 0.8, "unidad": "Kg"},
+        
+        {"nombre": "Tomate Perita (Huacal 30kg)", "cat": "Hortalizas", "sku": "RUB-TOMA-HUA", "img": "https://images.unsplash.com/photo-1546473530-9a31436a30c5?auto=format&fit=crop&q=80&w=800", "p": 25.0, "unidad": "Huacales"},
+        {"nombre": "Tomate Perita (Detal)", "cat": "Hortalizas", "sku": "RUB-TOMA-KG", "img": "https://images.unsplash.com/photo-1546473530-9a31436a30c5?auto=format&fit=crop&q=80&w=800", "p": 1.2, "unidad": "Kg"},
+        
+        {"nombre": "Caraotas Negras (Saco 50kg)", "cat": "Viveres y Granos", "sku": "RUB-CARA-SAC", "img": "https://images.unsplash.com/photo-1551462147-37885abb3e4a?auto=format&fit=crop&q=80&w=800", "p": 75.0, "unidad": "Sacos"},
+        {"nombre": "Caraotas Negras (Detal)", "cat": "Viveres y Granos", "sku": "RUB-CARA-KG", "img": "https://images.unsplash.com/photo-1551462147-37885abb3e4a?auto=format&fit=crop&q=80&w=800", "p": 1.7, "unidad": "Kg"},
+        
+        {"nombre": "Cebolla Blanca (Saco 20kg)", "cat": "Hortalizas", "sku": "RUB-CEBO-MALLA", "img": "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&q=80&w=800", "p": 18.0, "unidad": "Sacos"},
+        {"nombre": "Cebolla Blanca (Detal)", "cat": "Hortalizas", "sku": "RUB-CEBO-KG", "img": "https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&q=80&w=800", "p": 1.0, "unidad": "Kg"},
+        
+        {"nombre": "Pimenton Rojo (Caja 15kg)", "cat": "Hortalizas", "sku": "RUB-PIME-CAJA", "img": "https://images.unsplash.com/photo-1563513307168-a5105ebf16ee?auto=format&fit=crop&q=80&w=800", "p": 15.0, "unidad": "Cajas"},
+        {"nombre": "Pimenton Rojo (Detal)", "cat": "Hortalizas", "sku": "RUB-PIME-KG", "img": "https://images.unsplash.com/photo-1563513307168-a5105ebf16ee?auto=format&fit=crop&q=80&w=800", "p": 1.5, "unidad": "Kg"},
+        
+        {"nombre": "Yuca Dulce (Saco 40kg)", "cat": "Raices y Tuberculos", "sku": "RUB-YUCA-SAC", "img": "https://images.unsplash.com/photo-1629115913220-4a88f7b57b9e?auto=format&fit=crop&q=80&w=800", "p": 20.0, "unidad": "Sacos"},
+        {"nombre": "Lechuga Criolla (Caja)", "cat": "Verdes y Hierbas", "sku": "RUB-LECH-CEST", "img": "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?auto=format&fit=crop&q=80&w=800", "p": 12.0, "unidad": "Cajas"},
+        {"nombre": "Cebollin (Kilo)", "cat": "Verdes y Hierbas", "sku": "RUB-CEBN", "img": "https://images.unsplash.com/photo-1587483166752-bf5df5dca507?auto=format&fit=crop&q=80&w=800", "p": 1.0, "unidad": "Kg"},
+        {"nombre": "Ajo Morado (Kilo)", "cat": "Hortalizas", "sku": "RUB-AJOM", "img": "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?auto=format&fit=crop&q=80&w=800", "p": 4.5, "unidad": "Kg"},
+        {"nombre": "Remolacha (Saco 30kg)", "cat": "Hortalizas", "sku": "RUB-REMO", "img": "https://images.unsplash.com/photo-1528113033602-ae2426da1bb3?auto=format&fit=crop&q=80&w=800", "p": 20.0, "unidad": "Sacos"}
     ]
 
     final_prods = []
@@ -63,33 +73,25 @@ def seed_catalog():
             "sku": p["sku"],
             "imagen_url": p["img"],
             "precio_base_usd": p["p"],
-            "descripcion_tecnica": f"Producto fresco nacional. Categoria: {p['cat']}. Calidad garantizada."
+            "unidad_medida": p["unidad"],
+            "descripcion_tecnica": f"Producto fresco nacional. Categoria: {p['cat']}. Calidad garantizada. Venta por: {p['unidad']}."
         })
 
     print("Insertando productos...")
     res_prods = supabase.table('productos').insert(final_prods).execute()
     prod_map = {p['nombre']: p['id'] for p in res_prods.data}
 
-    # 3. Crear Ofertas Diversificadas (Diferentes Unidades)
-    print("Creando ofertas diversificadas...")
+    # 3. Crear Ofertas Diversificadas (Asociar Productor con Producto)
+    print("Creando ofertas a base de productos...")
     ofertas = []
-    # Papa
-    ofertas.append({"productor_id": PRODUCTOR_UUID, "producto_id": prod_map["Papa Granola"], "cantidad_disponible": 100, "unidad_medida": "Sacos", "precio_propuesto_usd": 30.0})
-    ofertas.append({"productor_id": PRODUCTOR_UUID, "producto_id": prod_map["Papa Granola"], "cantidad_disponible": 500, "unidad_medida": "Kg", "precio_propuesto_usd": 0.8})
-    # Tomate
-    ofertas.append({"productor_id": PRODUCTOR_UUID, "producto_id": prod_map["Tomate Perita"], "cantidad_disponible": 50, "unidad_medida": "Huacales", "precio_propuesto_usd": 25.0})
-    ofertas.append({"productor_id": PRODUCTOR_UUID, "producto_id": prod_map["Tomate Perita"], "cantidad_disponible": 200, "unidad_medida": "Kg", "precio_propuesto_usd": 1.2})
-    # Pimentón
-    ofertas.append({"productor_id": PRODUCTOR_UUID, "producto_id": prod_map["Pimenton Rojo"], "cantidad_disponible": 40, "unidad_medida": "Cajas", "precio_propuesto_usd": 15.0})
-    ofertas.append({"productor_id": PRODUCTOR_UUID, "producto_id": prod_map["Pimenton Rojo"], "cantidad_disponible": 150, "unidad_medida": "Kg", "precio_propuesto_usd": 1.5})
-    # Lechuga
-    ofertas.append({"productor_id": PRODUCTOR_UUID, "producto_id": prod_map["Lechuga Criolla"], "cantidad_disponible": 30, "unidad_medida": "Cajas", "precio_propuesto_usd": 12.0})
-    # Cebollin
-    ofertas.append({"productor_id": PRODUCTOR_UUID, "producto_id": prod_map["Cebollin"], "cantidad_disponible": 100, "unidad_medida": "Kg", "precio_propuesto_usd": 1.0})
-    # Ajo
-    ofertas.append({"productor_id": PRODUCTOR_UUID, "producto_id": prod_map["Ajo Morado"], "cantidad_disponible": 50, "unidad_medida": "Kg", "precio_propuesto_usd": 4.5})
-    # Caraotas
-    ofertas.append({"productor_id": PRODUCTOR_UUID, "producto_id": prod_map["Caraotas Negras"], "cantidad_disponible": 20, "unidad_medida": "Sacos", "precio_propuesto_usd": 75.0})
+    for prod in res_prods.data:
+        ofertas.append({
+            "productor_id": PRODUCTOR_UUID, 
+            "producto_id": prod["id"], 
+            "cantidad_disponible": 100 if "Kg" not in prod["unidad_medida"] else 500, 
+            "unidad_medida": prod["unidad_medida"], 
+            "precio_propuesto_usd": prod["precio_base_usd"]
+        })
     
     supabase.table('produccion_productor').insert(ofertas).execute()
 
