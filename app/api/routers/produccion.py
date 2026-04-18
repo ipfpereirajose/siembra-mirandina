@@ -4,6 +4,7 @@ from typing import List, Optional
 from app.models.schemas import ProduccionCreate, ProduccionUpdateVenta, NotificacionResponse
 from app.api.routers.comercio import get_user_context
 from typing import List
+import uuid
 
 router_produccion = APIRouter(prefix="/produccion", tags=["Producción Agrícola"])
 router_notificaciones = APIRouter(prefix="/notificaciones", tags=["Sistema de Notificaciones"])
@@ -31,8 +32,34 @@ def declarar_produccion(payload: ProduccionCreate, auth_ctx: dict = Depends(get_
     producto_id = payload.producto_id
     
     try:
-        # Si es un rubro nuevo, lo creamos primero
-        if not producto_id and payload.nuevo_producto_nombre:
+        base_product = None
+        if producto_id:
+            prod_res = supabase.table('productos').select('*').eq('id', str(producto_id)).single().execute()
+            if prod_res.data:
+                base_product = prod_res.data
+        
+        # Lógica de bifurcación de Rubros por Unidad de Medida (Flexibilidad)
+        if base_product and base_product['unidad_medida'].lower() != payload.unidad_medida.lower():
+            # Buscar si ya existe una variante para esa unidad específica
+            var_res = supabase.table('productos').select('id').ilike('nombre', f"{base_product['nombre']}").ilike('unidad_medida', f"{payload.unidad_medida}").limit(1).execute()
+            if var_res.data:
+                producto_id = var_res.data[0]['id']
+            else:
+                # Si no existe, bifurcamos el producto
+                nuevo_prod = base_product.copy()
+                del nuevo_prod['id']
+                del nuevo_prod['created_at']
+                # Ajustar el SKU (podría fallar si es exacto al anterior, le rotamos la unidad)
+                # Extraemos la base antes del ultimo guión (si existe) y appendamos la nueva unidad truncada
+                base_sku = base_product['sku'].rsplit('-', 1)[0] if '-' in base_product['sku'] else base_product['sku']
+                nuevo_prod['sku'] = f"{base_sku}-{payload.unidad_medida[:4].upper()}-{str(uuid.uuid4())[:4]}"
+                nuevo_prod['unidad_medida'] = payload.unidad_medida
+                
+                clon_res = supabase.table('productos').insert(nuevo_prod).execute()
+                producto_id = clon_res.data[0]['id']
+
+        # Si es un rubro completamente nuevo (OTRO)
+        elif not producto_id and payload.nuevo_producto_nombre:
             cat_nombre = categorizar_automaticamente(payload.nuevo_producto_nombre)
             cat_res = supabase.table('categorias').select('id').ilike('nombre', f"%{cat_nombre}%").limit(1).execute()
             cat_id = cat_res.data[0]['id'] if cat_res.data else None
@@ -40,8 +67,9 @@ def declarar_produccion(payload: ProduccionCreate, auth_ctx: dict = Depends(get_
             prod_res = supabase.table('productos').insert({
                 "nombre": payload.nuevo_producto_nombre,
                 "categoria_id": cat_id,
-                "sku": f"PROD-NEW-{payload.nuevo_producto_nombre[:3].upper()}",
+                "sku": f"PROD-NEW-{payload.nuevo_producto_nombre[:3].upper()}-{payload.unidad_medida[:3].upper()}",
                 "precio_base_usd": payload.precio_propuesto_usd or 0.0,
+                "unidad_medida": payload.unidad_medida,
                 "activo": True
             }).execute()
             producto_id = prod_res.data[0]['id']

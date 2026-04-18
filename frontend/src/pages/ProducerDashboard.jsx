@@ -167,15 +167,27 @@ const ProducerDashboard = ({ user }) => {
               <label>Cantidad Disponible</label>
               <input type="number" className="glass-input" value={selection.cantidad} onChange={e => setSelection({...selection, cantidad: e.target.value})} step="0.01" required />
             </div>
-            <div className="form-group" style={{ width: '120px' }}>
+            <div className="form-group" style={{ width: '150px' }}>
               <label>Unidad</label>
-              <select className="glass-input" value={selection.unidad} onChange={e => setSelection({...selection, unidad: e.target.value})}>
-                <option value="Kg">Kg</option>
-                <option value="Sacos">Sacos</option>
-                <option value="Huacales">Huacales</option>
-                <option value="Cajas">Cajas</option>
-                <option value="Unidades">Unidades</option>
-              </select>
+              <input 
+                type="text" 
+                list="unidades-list" 
+                className="glass-input" 
+                value={selection.unidad} 
+                onChange={e => setSelection({...selection, unidad: e.target.value})} 
+                required 
+                placeholder="Ej: Kg, Sacos, Manos"
+              />
+              <datalist id="unidades-list">
+                <option value="Kg" />
+                <option value="Sacos" />
+                <option value="Huacales" />
+                <option value="Cajas" />
+                <option value="Unidades" />
+                <option value="Manos" />
+                <option value="Mallas" />
+                <option value="Racimos" />
+              </datalist>
             </div>
           </div>
           <div className="form-group">
