@@ -23,6 +23,25 @@ def categorizar_automaticamente(nombre: str) -> str:
             return cat
     return "misceláneos"
 
+def get_default_image_for_category(cat_nombre: str) -> str:
+    """Retorna una imagen genérica premium según la categoría"""
+    cat_nombre = cat_nombre.lower()
+    mapping_img = {
+        "hortalizas": "https://images.unsplash.com/photo-1595856728068-07bf1227f2dd?auto=format&fit=crop&q=80&w=800",
+        "tubérculos": "https://images.unsplash.com/photo-1596701041177-3e284a1d48c9?auto=format&fit=crop&q=80&w=800",
+        "frutas": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=80&w=800",
+        "leguminosas": "https://images.unsplash.com/photo-1551462147-37885abb3e4a?auto=format&fit=crop&q=80&w=800",
+        "raices y tuberculos": "https://images.unsplash.com/photo-1596701041177-3e284a1d48c9?auto=format&fit=crop&q=80&w=800",
+        "viveres y granos": "https://images.unsplash.com/photo-1551462147-37885abb3e4a?auto=format&fit=crop&q=80&w=800",
+        "verdes y hierbas": "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?auto=format&fit=crop&q=80&w=800"
+    }
+    # Intentar coincidencia exacta o parcial
+    for key, img in mapping_img.items():
+        if key in cat_nombre:
+            return img
+    return "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=800" # Miscelaneos default
+
+
 @router_produccion.post("/declarar")
 def declarar_produccion(payload: ProduccionCreate, auth_ctx: dict = Depends(get_user_context)):
     """
@@ -70,6 +89,7 @@ def declarar_produccion(payload: ProduccionCreate, auth_ctx: dict = Depends(get_
                 "sku": f"PROD-NEW-{payload.nuevo_producto_nombre[:3].upper()}-{payload.unidad_medida[:3].upper()}",
                 "precio_base_usd": payload.precio_propuesto_usd or 0.0,
                 "unidad_medida": payload.unidad_medida,
+                "imagen_url": get_default_image_for_category(cat_nombre),
                 "activo": True
             }).execute()
             producto_id = prod_res.data[0]['id']
