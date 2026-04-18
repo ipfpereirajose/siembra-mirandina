@@ -110,9 +110,20 @@ const Home = ({ cart, setCart }) => {
         <p className="text-muted" style={{ fontSize: '1.25rem', maxWidth: '600px', textShadow: '0 1px 5px rgba(0,0,0,0.8)', color: '#fff' }}>
           {heroSlides[currentSlide].desc}
         </p>
-        <button className="btn-primary" style={{ marginTop: '2rem', padding: '15px 30px', fontSize: '1.1rem' }} onClick={() => navigate('/register')}>
-          Abrir Cuenta Empresarial Hoy
-        </button>
+        {/* Botonera de Acción Primaria */}
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+          <button className="btn-primary" style={{ padding: '15px 30px', fontSize: '1.1rem' }} onClick={() => navigate('/register')}>
+            Abrir Cuenta Empresarial Hoy
+          </button>
+          
+          <button 
+             className="btn-outline" 
+             onClick={() => navigate('/cliente')} 
+             style={{ fontSize: '1.1rem', padding: '15px 30px', backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.5)', boxShadow: '0 4px 15px var(--arco-glow)' }}
+           >
+             🚛 Generar Requisición Especial (B2B)
+           </button>
+        </div>
 
         {/* Dots del carrusel */}
         <div style={{ display: 'flex', gap: '8px', position: 'absolute', bottom: '20px', left: '3rem' }}>
