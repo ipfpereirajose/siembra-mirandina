@@ -7,7 +7,7 @@ const CartSidebar = ({ cart, setCart, isAuthenticated, onClose }) => {
   const [loading, setLoading] = useState(false)
   const [successId, setSuccessId] = useState(null)
 
-  const total = cart.reduce((acc, item) => acc + (item.product.precio_base_usd * item.quantity), 0)
+  const total = cart.reduce((acc, item) => acc + ((item?.product?.precio_base_usd || 0) * (item?.quantity || 0)), 0)
 
   // Verificar si hay productos en el carrito
   const hasItems = cart.length > 0
@@ -86,12 +86,14 @@ const CartSidebar = ({ cart, setCart, isAuthenticated, onClose }) => {
             </div>
           )}
 
-          {!successId && cart.map((item, idx) => (
+          {!successId && cart.map((item, idx) => {
+            if (!item?.product) return null; // Ignorar items corruptos
+            return (
             <div key={idx} className="cart-item">
               <div className="cart-item-info">
                 <h4>{item.product.nombre}</h4>
                 <div className="text-muted" style={{fontSize: '0.85rem', display: 'flex', gap: '10px', alignItems: 'center'}}>
-                  {item.quantity} x ${item.product.precio_base_usd.toFixed(2)}
+                  {item.quantity} x ${item.product.precio_base_usd?.toFixed(2)}
                   <span 
                     style={{color: 'var(--acento-alerta, #ef4444)', cursor: 'pointer', padding: '2px 6px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '4px'}}
                     onClick={() => setCart(prev => prev.filter((_, i) => i !== idx))}
@@ -101,10 +103,10 @@ const CartSidebar = ({ cart, setCart, isAuthenticated, onClose }) => {
                 </div>
               </div>
               <div className="cart-item-total">
-                ${(item.quantity * item.product.precio_base_usd).toFixed(2)}
+                ${(item.quantity * (item.product.precio_base_usd || 0)).toFixed(2)}
               </div>
             </div>
-          ))}
+          )})}
         </div>
 
         {!successId && cart.length > 0 && (

@@ -12,15 +12,15 @@ const Home = ({ cart, setCart }) => {
 
   // Cargar carrito desde localStorage al iniciar
   useEffect(() => {
-    const savedCart = localStorage.getItem('tempCart')
+    const savedCart = localStorage.getItem('siembra_cart')
     if (savedCart) {
-      setCart(JSON.parse(savedCart))
+      try { setCart(JSON.parse(savedCart)) } catch(e){}
     }
   }, [setCart])
 
-  // Guardar carrito en localStorage cuando cambie
+  // Guardar carrito en localStorage cuando cambie (usamos siembra_cart consistente con App.jsx)
   useEffect(() => {
-    localStorage.setItem('tempCart', JSON.stringify(cart))
+    localStorage.setItem('siembra_cart', JSON.stringify(cart))
   }, [cart])
 
   const heroSlides = [
@@ -59,19 +59,17 @@ const Home = ({ cart, setCart }) => {
   }, [])
 
   const handleAddToCart = (product) => {
-    // Agregar producto al carrito sin necesidad de login
-    const existingItem = cart.find(item => item.id === product.id)
+    // Agregar producto al carrito usando la estructura { product, quantity } consistente con Catalog
+    const existingIdx = cart.findIndex(item => item.product?.id === product.id)
     
-    if (existingItem) {
+    if (existingIdx >= 0) {
       // Si ya existe, aumentar cantidad
-      setCart(cart.map(item => 
-        item.id === product.id 
-          ? { ...item, quantity: (item.quantity || 1) + 1 }
-          : item
-      ))
+      const newCart = [...cart]
+      newCart[existingIdx].quantity += 1
+      setCart(newCart)
     } else {
       // Agregar nuevo producto
-      setCart([...cart, { ...product, quantity: 1 }])
+      setCart([...cart, { product, quantity: 1 }])
     }
   }
 
