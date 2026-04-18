@@ -1,22 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Paleta Siembra Mirandina (Frescura y Tierra) */
-  --bg-base: #06090F;
-  --bg-panel: rgba(10, 15, 25, 0.75);
-  --bg-card: rgba(22, 32, 48, 0.6);
+  /* Paleta Siembra Mirandina - Nueva Identidad Visual */
+  --bg-base: #F8F9FA; /* Blanco Nube */
+  --bg-panel: rgba(255, 255, 255, 0.85); /* Glass claro */
+  --bg-card: rgba(255, 255, 255, 0.95);
   
-  /* Verde Orgánico Premium */
-  --miranda-primary: #10B981;
-  --miranda-accent: #34D399;
-  --miranda-earth: #78350F;
-  --miranda-glow: rgba(16, 185, 129, 0.3);
+  /* Colores Corporativos */
+  --miranda-primary: #2E7D32; /* Verde Crecimiento */
+  --miranda-accent: #1565C0; /* Azul Tecnológico */
+  --arco-focus: #E65100; /* Naranja Cosecha CTA */
+  --miranda-glow: rgba(46, 125, 50, 0.3);
+  --arco-glow: rgba(230, 81, 0, 0.3);
   
-  /* Textos y Bordes */
-  --text-main: #FDFDFD;
-  --text-muted: #94A3B8;
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(16, 185, 129, 0.5);
+  /* Textos y Bordes para Fondo Claro */
+  --text-main: #1E293B;
+  --text-muted: #64748B;
+  --border-glass: rgba(0, 0, 0, 0.08);
+  --border-active: rgba(46, 125, 50, 0.5);
 
   --font-sans: 'Inter', sans-serif;
 }
@@ -33,9 +34,9 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  /* Fondo radial tecnológico */
-  background-image: radial-gradient(circle at top right, rgba(16, 185, 129, 0.1), transparent 40%),
-                    radial-gradient(circle at bottom left, rgba(15, 23, 42, 1), transparent 50%);
+  /* Fondo radial tecnológico claro */
+  background-image: radial-gradient(circle at top right, rgba(46, 125, 50, 0.08), transparent 45%),
+                    radial-gradient(circle at bottom left, rgba(21, 101, 192, 0.08), transparent 45%);
   background-attachment: fixed;
 }
 
@@ -71,15 +72,15 @@ h1, h2, h3 {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+  background: linear-gradient(135deg, var(--miranda-accent) 0%, var(--miranda-primary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Botones Premium */
+/* Botones Premium - Llamado a la Acción (CTA) */
 .btn-primary {
-  background: var(--miranda-primary);
+  background: var(--arco-focus);
   color: #fff;
   border: none;
   padding: 10px 24px;
@@ -88,13 +89,13 @@ h1, h2, h3 {
   font-family: var(--font-sans);
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 0 15px var(--miranda-glow);
+  box-shadow: 0 4px 15px var(--arco-glow);
 }
 
 .btn-primary:hover {
-  background: var(--arco-focus);
+  background: #BF360C; /* Naranja más oscuro al hacer hover */
   transform: scale(1.02);
-  box-shadow: 0 0 25px var(--arco-glow);
+  box-shadow: 0 6px 25px var(--arco-glow);
 }
 
 .btn-outline {
