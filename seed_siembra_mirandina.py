@@ -10,8 +10,13 @@ from app.db.supabase_client import get_supabase
 def seed_catalog():
     supabase = get_supabase()
     
-    # UUID del productor creado en Supabase Auth
-    PRODUCTOR_UUID = "795962f5-6d62-4405-b6fa-c1635242119b"
+    # Obtener el UUID del Productor oficial dinamicamente
+    productor_res = supabase.table('perfiles').select('id').eq('rol', 'PRODUCTOR').execute()
+    if not productor_res.data:
+        print("Error: No se encontro ningun usuario con rol PRODUCTOR en la tabla perfiles.")
+        print("Por favor ejecuta primero seed_production_users.py")
+        return
+    PRODUCTOR_UUID = productor_res.data[0]['id']
     
     print("Limpiando datos antiguos en Proyecto A...")
     try:

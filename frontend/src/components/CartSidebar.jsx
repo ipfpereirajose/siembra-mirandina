@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './CartSidebar.css'
 
-const CartSidebar = ({ cart, setCart, onClose }) => {
+const CartSidebar = ({ cart, setCart, isAuthenticated, onClose }) => {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [successId, setSuccessId] = useState(null)
 
@@ -88,8 +90,14 @@ const CartSidebar = ({ cart, setCart, onClose }) => {
             <div key={idx} className="cart-item">
               <div className="cart-item-info">
                 <h4>{item.product.nombre}</h4>
-                <div className="text-muted" style={{fontSize: '0.85rem'}}>
+                <div className="text-muted" style={{fontSize: '0.85rem', display: 'flex', gap: '10px', alignItems: 'center'}}>
                   {item.quantity} x ${item.product.precio_base_usd.toFixed(2)}
+                  <span 
+                    style={{color: 'var(--acento-alerta, #ef4444)', cursor: 'pointer', padding: '2px 6px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '4px'}}
+                    onClick={() => setCart(prev => prev.filter((_, i) => i !== idx))}
+                  >
+                    🗑️ Borrar
+                  </span>
                 </div>
               </div>
               <div className="cart-item-total">
@@ -109,17 +117,17 @@ const CartSidebar = ({ cart, setCart, onClose }) => {
               className="btn-primary" 
               style={{width: '100%', padding: '1rem'}} 
               onClick={() => {
-                // Para usuarios no registrados, redirigir al login con mensaje
-                alert('Para confirmar tu orden, por favor regístrate o inicia sesión primero.')
-                onClose()
-                // Redirigir al login después de cerrar el sidebar
-                setTimeout(() => {
-                  window.location.href = '/login'
-                }, 300)
+                if (!isAuthenticated) {
+                  alert('Para confirmar tu orden y facturar, por favor regístrate o inicia sesión.')
+                  onClose()
+                  navigate('/login')
+                } else {
+                  handleCheckout()
+                }
               }} 
               disabled={loading}
             >
-              {loading ? 'Procesando Venta Segura...' : 'Confirmar Orden B2B'}
+              {loading ? 'Procesando Venta Segura...' : (isAuthenticated ? 'Confirmar Orden Corporativa' : 'Inicia Sesión para Pagar')}
             </button>
           </div>
         )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import './Catalog.css'
 
 const CustomerDashboard = ({ user }) => {
@@ -9,22 +10,27 @@ const CustomerDashboard = ({ user }) => {
   const [loading, setLoading] = useState(false)
 
   const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001'
+  const isB2B = user?.rol === 'CLIENTE_EMPRESA'
 
   useEffect(() => {
     cargarDatos()
-    fetch(`${API}/productos/`).then(res => res.json()).then(data => setRubros(data))
+    fetch(`${API}/productos/`).then(res => {
+      if(res.ok) return res.json()
+      return []
+    }).then(data => setRubros(data || []))
   }, [])
 
   const cargarDatos = () => {
     fetch(`${API}/pedidos/historial`, {
       method: 'GET',
       headers: {
-        'x-user-id': user.id,
-        'x-empresa-id': user.empresa_id
+        'x-user-id': user?.id,
+        'x-empresa-id': user?.empresa_id
       }
     })
-    .then(res => res.json())
-    .then(data => setHistorial(data))
+    .then(res => res.ok ? res.json() : [])
+    .then(data => setHistorial(data || []))
+    .catch(() => setHistorial([]))
   }
 
   const handleCustomPedido = async (e) => {
@@ -43,7 +49,7 @@ const CustomerDashboard = ({ user }) => {
              unidad_medida: pedido.unidad
           })
        })
-       alert("Pedido personalizado enviado. El administrador asignará el precio y notificará la disponibilidad.")
+       alert("Pedido personalizado enviado. El administrador asignará el precio y te notificará por SMS/Web.")
        setShowPedidoForm(false)
        setPedido({ producto_id: '', cantidad: '', unidad: 'Sacos' })
     } catch (e) {
@@ -53,75 +59,116 @@ const CustomerDashboard = ({ user }) => {
     }
   }
 
+  // Cálculos de KPIs Financieros
+  const totalPedidos = historial.length
+  const montoInvertido = historial.reduce((acc, obj) => acc + (obj.total_usd || 0), 0)
+  
+  const getStatusBadge = (estado) => {
+    const st = (estado || 'PENDIENTE').toUpperCase()
+    if(st === 'COMPLETADO' || st === 'ENTREGADO') return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(52, 211, 153, 0.1)', color: '#10b981', fontSize: '0.8rem'}}>🟢 Completado</span>
+    if(st === 'PROCESANDO' || st === 'APROBADO') return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontSize: '0.8rem'}}>🔵 En Proceso</span>
+    return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(251, 191, 36, 0.1)', color: '#f59e0b', fontSize: '0.8rem'}}>🟡 Pendiente / Por Pagar</span>
+  }
+
   return (
-    <div style={{ padding: '2rem 0' }}>
+    <div style={{ padding: '2rem 0' }} className="fade-in">
        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h1>Mi Panel <span className="text-gradient">Siembra Mirandina</span></h1>
-          <button className="btn-primary" onClick={() => setShowPedidoForm(!showPedidoForm)}>
-             {showPedidoForm ? 'Ver Historial' : '🚀 Nuevo Pedido Personalizado'}
-          </button>
+          <div>
+            <h1>{isB2B ? 'Portal B2B Corporativo' : 'Mi Mercado B2C'}</h1>
+            <p className="text-muted">Bienvenido, {user?.nombre_completo || 'Cliente'}</p>
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <Link to="/b2b">
+              <button className="btn-outline">🛒 Ir al Catálogo</button>
+            </Link>
+            <button className="btn-primary" onClick={() => setShowPedidoForm(!showPedidoForm)}>
+               {showPedidoForm ? 'Volver al Historial' : '🚀 Solicitar Requisición Especial'}
+            </button>
+          </div>
        </div>
 
+       {/* Panel de Métricas Rápidas (KPIs) */}
+       {!showPedidoForm && (
+         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Total Compras Realizadas</p>
+              <h2 style={{ color: 'var(--arco-primary)' }}>{totalPedidos}</h2>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Monto Histórico Invertido</p>
+              <h2 style={{ color: 'var(--miranda-primary)' }}>${montoInvertido.toFixed(2)}</h2>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Estatus de Último Pedido</p>
+              <div>{totalPedidos > 0 ? getStatusBadge(historial[0].estado) : <span className="text-muted">N/A</span>}</div>
+            </div>
+         </div>
+       )}
+
        {showPedidoForm ? (
-          <div className="glass-panel" style={{ padding: '3rem', maxWidth: '800px', margin: '0 auto' }}>
-             <h3>Crear Pedido a Medida</h3>
-             <p className="text-muted" style={{ marginBottom: '2rem' }}>Selecciona el rubro y la cantidad necesaria. El administrador procesará tu solicitud.</p>
+          <div className="glass-panel fade-in" style={{ padding: '3rem', maxWidth: '800px', margin: '0 auto' }}>
+             <h3>Crear Requisición Especial</h3>
+             <p className="text-muted" style={{ marginBottom: '2rem' }}>
+                Selecciona el rubro y la cantidad corporativa que necesitas. Nuestro administrador evaluará los volúmenes, fijará el precio competitivo y <strong>te notificará inmediatamente al procesarlo</strong>.
+             </p>
              <form onSubmit={handleCustomPedido} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                   <label>Verdura / Rubro</label>
+                   <label>Verdura / Rubro Requerido</label>
                    <select className="glass-input" value={pedido.producto_id} onChange={e => setPedido({...pedido, producto_id: e.target.value})} required>
-                      <option value="">Seleccione...</option>
+                      <option value="">Seleccione el rubro principal...</option>
                       {rubros.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
                    </select>
                 </div>
                 <div className="form-group">
-                   <label>Cantidad</label>
-                   <input type="number" className="glass-input" value={pedido.cantidad} onChange={e => setPedido({...pedido, cantidad: e.target.value})} required />
+                   <label>Cantidad Solicitada</label>
+                   <input type="number" placeholder="Ej: 50" className="glass-input" value={pedido.cantidad} onChange={e => setPedido({...pedido, cantidad: e.target.value})} required />
                 </div>
                 <div className="form-group">
-                   <label>Unidad de Medida</label>
+                   <label>Unidad de Medida (Logística)</label>
                    <select className="glass-input" value={pedido.unidad} onChange={e => setPedido({...pedido, unidad: e.target.value})}>
-                      <option value="Sacos">Sacos</option>
-                      <option value="Kg">Kg</option>
+                      <option value="Sacos">Sacos Industriales</option>
+                      <option value="Kg">Kilogramos</option>
                       <option value="Huacales">Huacales</option>
                       <option value="Cajas">Cajas</option>
                    </select>
                 </div>
-                <div className="form-group" style={{ gridColumn: 'span 2', textAlign: 'center', background: 'rgba(52, 211, 153, 0.05)', padding: '1rem', borderRadius: '8px' }}>
-                   <p style={{ fontSize: '0.85rem' }}>* Los precios serán establecidos por el administrador según el mercado actual.</p>
-                </div>
                 <button type="submit" className="btn-primary" style={{ gridColumn: 'span 2', padding: '1rem' }} disabled={loading}>
-                   {loading ? 'Enviando...' : 'Confirmar Solicitud de Pedido'}
+                   {loading ? 'Transmitiendo Requisición...' : 'Confirmar Solicitud de Pedido Especial'}
                 </button>
              </form>
           </div>
        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
-             <div className="glass-panel" style={{ padding: '2rem' }}>
-                <h3>Historial de Pedidos</h3>
-                <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                   {historial.length === 0 ? <p className="text-muted">No hay facturas registradas aún.</p> : (
-                      historial.map(ped => (
-                         <div key={ped.id} className="glass-card" style={{ padding: '1.2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                               <div style={{ fontWeight: 'bold' }}>Pedido Agrotech #{ped.id.substring(0,8)}</div>
-                               <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{new Date(ped.created_at).toLocaleDateString()} • {ped.metodo_pago}</div>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                               <div style={{ fontWeight: 'bold', color: 'var(--miranda-primary)', fontSize: '1.2rem' }}>${ped.total_usd.toFixed(2)}</div>
-                               <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>USD Ref BCV</div>
+          <div className="glass-panel fade-in" style={{ padding: '2.5rem' }}>
+             <h3 style={{ marginBottom: '2rem' }}>Operaciones Autorizadas (Historial)</h3>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                {historial.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3rem' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '1rem', opacity: 0.5 }}>📦</div>
+                    <p className="text-muted">Aún no tienes facturas registradas en el sistema.</p>
+                    <Link to="/b2b">
+                      <button className="btn-primary" style={{ marginTop: '1.5rem' }}>Explorar el Catálogo B2B</button>
+                    </Link>
+                  </div>
+                ) : (
+                   historial.map(ped => (
+                      <div key={ped.id} className="glass-card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                         <div>
+                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Orden Tracking: #{ped.id.substring(0,8).toUpperCase()}</div>
+                            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                              <span>📅 {new Date(ped.created_at).toLocaleDateString()}</span>
+                              <span>💳 {ped.metodo_pago.replace(/_/g, ' ')}</span>
                             </div>
                          </div>
-                      ))
-                   )}
-                </div>
-             </div>
-
-             <div className="glass-card" style={{ padding: '2rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📦</div>
-                <h3>¿Necesitas algo más?</h3>
-                <p className="text-muted" style={{ marginBottom: '1.5rem' }}>Si no encuentras lo que buscas en el catálogo, usa el pedido personalizado.</p>
-                <button className="btn-outline" onClick={() => setShowPedidoForm(true)}>Hacer Pedido Especial</button>
+                         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                            <div>{getStatusBadge(ped.estado)}</div>
+                            <div style={{ textAlign: 'right' }}>
+                               <div style={{ fontWeight: 'bold', color: 'var(--miranda-primary)', fontSize: '1.3rem' }}>${ped.total_usd.toFixed(2)}</div>
+                               <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>Monto Neto (USD)</div>
+                            </div>
+                         </div>
+                      </div>
+                   ))
+                )}
              </div>
           </div>
        )}

@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Catalog from './pages/Catalog'
@@ -14,8 +14,20 @@ import CustomerDashboard from './pages/CustomerDashboard'
 const App = memo(() => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null) // { id, rol, empresa_id, nombre_completo }
-  const [cart, setCart] = useState([])
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('siembra_cart')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
   const [isCartOpen, setIsCartOpen] = useState(false)
+
+  // Sincronizar siempre el carrito con localStorage para no perder productos
+  useEffect(() => {
+    localStorage.setItem('siembra_cart', JSON.stringify(cart))
+  }, [cart])
 
   const handleLogin = useCallback((userData) => {
     setIsAuthenticated(true)
@@ -38,7 +50,7 @@ const App = memo(() => {
         onOpenCart={() => setIsCartOpen(true)} 
       />
       
-      {isCartOpen && <CartSidebar cart={cart} setCart={setCart} onClose={() => setIsCartOpen(false)} />}
+      {isCartOpen && <CartSidebar cart={cart} setCart={setCart} isAuthenticated={isAuthenticated} onClose={() => setIsCartOpen(false)} />}
 
       <main style={{ padding: '2rem', maxWidth: '1280px', margin: '0 auto', marginTop: '80px' }}>
         <Routes>
@@ -47,9 +59,7 @@ const App = memo(() => {
             !isAuthenticated ? <LoginPortal onLogin={handleLogin} /> : <Navigate to="/b2b" replace />
           } />
           <Route path="/register" element={<Register />} />
-          <Route path="/b2b" element={
-            isAuthenticated ? <Catalog cart={cart} setCart={setCart} /> : <Navigate to="/login" replace />
-          } />
+          <Route path="/b2b" element={<Catalog cart={cart} setCart={setCart} />} />
           <Route path="/cliente" element={
             isAuthenticated ? <CustomerDashboard user={user} /> : <Navigate to="/login" replace />
           } />

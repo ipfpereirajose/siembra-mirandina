@@ -82,7 +82,7 @@ def sync_production_users():
             "telefono": "0412-1112233"
         }).execute()
 
-    print("\n✅ Depuración de usuarios completada con éxito.")
+    print("\nOK: Depuracion de usuarios completada con exito.")
 
 if __name__ == "__main__":
     sync_production_users()
