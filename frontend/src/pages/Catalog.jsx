@@ -79,12 +79,13 @@ const Catalog = ({ cart, setCart }) => {
       </div>
 
       {/* Carrusel de Promociones */}
-      <div className="glass-panel" style={{ 
+      <div style={{ 
           padding: '2.5rem 3rem', 
           marginBottom: '3rem', 
           position: 'relative',
           overflow: 'hidden',
           borderRadius: '16px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
           minHeight: '220px',
           display: 'flex',
           flexDirection: 'column',
@@ -94,11 +95,18 @@ const Catalog = ({ cart, setCart }) => {
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           backgroundImage: `url(${promoSlides[currentSlide].img})`,
           backgroundSize: 'cover', backgroundPosition: 'center',
-          opacity: 0.2, zIndex: -1,
+          zIndex: -2,
           transition: 'background-image 0.8s ease-in-out'
         }}></div>
 
-        <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: 'var(--miranda-primary)' }}>
+        {/* Overlay oscuro protector para que las imágenes mantengan su vivacidad mientras el texto resalta */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(15, 25, 35, 0.55)', /* Tono de oscurecimiento */
+          zIndex: -1
+        }}></div>
+
+        <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: '#ffffff', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
            🍃 {promoSlides[currentSlide].title}
         </h2>
         <p className="text-muted" style={{ fontSize: '1.1rem', maxWidth: '800px', color: '#fff' }}>

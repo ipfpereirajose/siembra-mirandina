@@ -79,23 +79,32 @@ const Home = ({ cart, setCart }) => {
     <div className="home-container" style={{ padding: '2rem 0' }}>
       
       {/* Carrusel Dinámico Real */}
-      <div className="hero-section glass-panel" style={{ 
+      <div className="hero-section" style={{ 
           padding: '4rem 3rem', 
           marginBottom: '3rem', 
           position: 'relative',
           overflow: 'hidden',
+          borderRadius: '16px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
           transition: 'all 0.5s ease-in-out'
       }}>
-        {/* Capa de la foto de fondo */}
+        {/* Capa de la foto de fondo 100% visible pero oscurecida para el texto */}
         <div style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           backgroundImage: `url(${heroSlides[currentSlide].img})`,
           backgroundSize: 'cover', backgroundPosition: 'center',
-          opacity: 0.35, zIndex: -1,
+          zIndex: -2,
           transition: 'background-image 1s ease-in-out'
         }}></div>
+        
+        {/* Overaly protector para texto */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(10, 20, 30, 0.45)', /* Tono oscuro sutil */
+          zIndex: -1
+        }}></div>
 
-        <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
+        <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', color: '#ffffff', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
            {heroSlides[currentSlide].title}
         </h1>
         <p className="text-muted" style={{ fontSize: '1.25rem', maxWidth: '600px', textShadow: '0 1px 5px rgba(0,0,0,0.8)', color: '#fff' }}>
