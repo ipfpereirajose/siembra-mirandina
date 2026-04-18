@@ -18,43 +18,9 @@ const CartSidebar = ({ cart, setCart, isAuthenticated, onClose }) => {
     setSuccessId(null)
   }, [onClose])
 
-  const handleCheckout = async () => {
-    setLoading(true)
-    const payload = {
-      metodo_pago: 'CREDITO_NET_30', // Fijo para MVP
-      lineas: cart.map(item => ({
-        producto_id: item.product.id,
-        cantidad: item.quantity
-      }))
-    }
-
-    try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001'
-      // En entorno de pruebas pasamos los headers ficticios correspondientes a la empresa mock de tests_api
-      // Nota: Si usaste IDs dinámicos en Supabase, debes ponerlos aquí en el front!
-      // Como esto es un MVP, pasamos IDs hardcodeados que deberán ser extraídos del Context/Autenticación real:
-      const res = await fetch(`${API_URL}/pedidos/checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': '00000000-0000-0000-0000-000000000000',
-          'x-empresa-id': '00000000-0000-0000-0000-000000000000'
-        },
-        body: JSON.stringify(payload)
-      })
-      
-      const data = await res.json()
-      if(res.ok) {
-        setSuccessId(data.id)
-        setCart([]) // Vaciamos carrito
-      } else {
-        alert("Error en la orden: " + (data.detail || JSON.stringify(data)))
-      }
-    } catch (e) {
-      alert("Error de red contactando API")
-    } finally {
-      setLoading(false)
-    }
+  const handleGoToCheckout = () => {
+    onClose()
+    navigate('/checkout')
   }
 
   return (
@@ -124,12 +90,11 @@ const CartSidebar = ({ cart, setCart, isAuthenticated, onClose }) => {
                   onClose()
                   navigate('/login')
                 } else {
-                  handleCheckout()
+                  handleGoToCheckout()
                 }
               }} 
-              disabled={loading}
             >
-              {loading ? 'Procesando Venta Segura...' : (isAuthenticated ? 'Confirmar Orden Corporativa' : 'Inicia Sesión para Pagar')}
+              {isAuthenticated ? 'Ir al Portal de Pagos ➔' : 'Inicia Sesión para Pagar'}
             </button>
           </div>
         )}

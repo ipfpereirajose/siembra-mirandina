@@ -10,6 +10,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import ProducerDashboard from './pages/ProducerDashboard'
 import Profile from './pages/Profile'
 import CustomerDashboard from './pages/CustomerDashboard'
+import Checkout from './pages/Checkout'
 
 const App = memo(() => {
   const [user, setUser] = useState(() => {
@@ -79,6 +80,9 @@ const App = memo(() => {
           } />
           <Route path="/productor" element={
             isAuthenticated && user?.rol === 'PRODUCTOR' ? <ProducerDashboard user={user} /> : <Navigate to="/login" replace />
+          } />
+          <Route path="/checkout" element={
+            isAuthenticated ? <Checkout cart={cart} setCart={setCart} user={user} /> : <Navigate to="/login" replace />
           } />
           <Route path="/admin" element={
             isAuthenticated && user?.rol === 'ADMINISTRADOR' ? <AdminDashboard user={user} /> : <Navigate to="/login" replace />
