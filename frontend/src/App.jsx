@@ -12,8 +12,17 @@ import Profile from './pages/Profile'
 import CustomerDashboard from './pages/CustomerDashboard'
 
 const App = memo(() => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [user, setUser] = useState(null) // { id, rol, empresa_id, nombre_completo }
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('siembra_user')
+      return savedUser ? JSON.parse(savedUser) : null
+    } catch {
+      return null
+    }
+  }) // { id, rol, empresa_id, nombre_completo }
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return !!localStorage.getItem('siembra_user')
+  })
   const [cart, setCart] = useState(() => {
     try {
       const saved = localStorage.getItem('siembra_cart')
@@ -32,12 +41,14 @@ const App = memo(() => {
   const handleLogin = useCallback((userData) => {
     setIsAuthenticated(true)
     setUser(userData)
+    localStorage.setItem('siembra_user', JSON.stringify(userData))
   }, [])
 
   const handleLogout = useCallback(() => {
     setIsAuthenticated(false)
     setUser(null)
     setCart([]) // Limpiar carrito al hacer logout
+    localStorage.removeItem('siembra_user')
   }, [])
 
   return (
