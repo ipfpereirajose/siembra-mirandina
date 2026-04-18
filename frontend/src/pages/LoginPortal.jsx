@@ -50,6 +50,7 @@ const LoginPortal = ({ onLogin }) => {
         </div>
         
         <form onSubmit={handleSubmit} className="login-form">
+          {error && <div style={{ color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '10px', borderRadius: '8px', marginBottom: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>{error}</div>}
           <div className="form-group">
             <label>Correo Electrónico Corporativo</label>
             <input 

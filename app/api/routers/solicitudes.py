@@ -22,7 +22,7 @@ def crear_solicitud_personalizada(payload: RequisicionMasivaCreate, auth_ctx: di
                 "producto_id": str(row.producto_id),
                 "cantidad": row.cantidad,
                 "unidad_medida": row.unidad_medida,
-                "estado": "PENDIENTE_COTIZACION"
+                "estado": "PENDIENTE"
             })
             
         res = supabase.table('pedidos_personalizados').insert(records).execute()

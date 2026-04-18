@@ -250,12 +250,12 @@ const CustomerDashboard = ({ user }) => {
                    <>
                      {/* TABLA DE SOLICITUDES ESPECIALES */}
                      {misSolicitudes.map(ped => (
-                        <div key={ped.id} className="glass-card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: '4px solid var(--arco-focus)' }}>
+                        <div key={ped.id || Math.random()} className="glass-card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: '4px solid var(--arco-focus)' }}>
                            <div>
-                              <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Requisición Especial: #{ped.id.substring(0,8).toUpperCase()}</div>
+                              <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Requisición Especial: #{ped.id?.substring(0,8).toUpperCase() || 'N/A'}</div>
                               <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                <span>📅 {new Date(ped.created_at).toLocaleDateString()}</span>
-                                <span>📑 {ped.productos?.nombre} (x{ped.cantidad} {ped.unidad_medida})</span>
+                                <span>📅 {ped.created_at ? new Date(ped.created_at).toLocaleDateString() : 'N/A'}</span>
+                                <span>📑 {ped.productos?.nombre || 'Producto'} (x{ped.cantidad || 0} {ped.unidad_medida || 'Unidades'})</span>
                               </div>
                            </div>
                            <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
@@ -265,18 +265,18 @@ const CustomerDashboard = ({ user }) => {
                      ))}
                      {/* TABLA DE COMPRAS CARRITO REGULAR */}
                      {historial.map(ped => (
-                        <div key={ped.id} className="glass-card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div key={ped.id || Math.random()} className="glass-card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                            <div>
-                              <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Despacho Estándar: #{ped.id.substring(0,8).toUpperCase()}</div>
+                              <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Despacho Estándar: #{ped.id?.substring(0,8).toUpperCase() || 'N/A'}</div>
                               <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                <span>📅 {new Date(ped.created_at).toLocaleDateString()}</span>
-                                <span>💳 {ped.metodo_pago.replace(/_/g, ' ')}</span>
+                                <span>📅 {ped.created_at ? new Date(ped.created_at).toLocaleDateString() : 'N/A'}</span>
+                                <span>💳 {(ped.metodo_pago || 'PREVIO_ACUERDO').replace(/_/g, ' ')}</span>
                               </div>
                            </div>
                            <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
                               <div>{getStatusBadge(ped.estado)}</div>
                               <div style={{ textAlign: 'right' }}>
-                                 <div style={{ fontWeight: 'bold', color: 'var(--miranda-primary)', fontSize: '1.3rem' }}>${ped.total_usd.toFixed(2)}</div>
+                                 <div style={{ fontWeight: 'bold', color: 'var(--miranda-primary)', fontSize: '1.3rem' }}>${(ped.total_usd || 0).toFixed(2)}</div>
                                  <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>Monto Neto (USD)</div>
                               </div>
                            </div>
