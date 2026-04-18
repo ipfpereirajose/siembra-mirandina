@@ -43,8 +43,9 @@ const Navbar = ({ cartCount, isAuthenticated, onLogout, onOpenCart, user }) => {
           {!isAuthenticated ? (
             <div className="navbar-menu" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
               {/* Carrito para usuarios no autenticados */}
-              <div className="cart-indicator" onClick={onOpenCart} style={{ cursor: 'pointer', fontSize: '1.2rem' }}>
-                <span className="cart-badge">{cartCount}</span>
+              <div className="cart-indicator" onClick={onOpenCart} style={{ cursor: 'pointer', fontSize: '1.2rem', position: 'relative' }}>
+                🛒 
+                <span className="cart-badge" style={{ position: 'absolute', top: '-10px', right: '-15px', background: 'var(--arco-primary)', color: 'black', borderRadius: '50%', padding: '2px 6px', fontSize: '0.8rem', fontWeight: 'bold' }}>{cartCount}</span>
               </div>
               
               <button className="btn-outline" style={{ border: 'none', color: 'var(--text-main)', cursor: 'pointer' }} onClick={() => navigate('/login')}>
@@ -57,8 +58,9 @@ const Navbar = ({ cartCount, isAuthenticated, onLogout, onOpenCart, user }) => {
           ) : (
             <div className="navbar-menu" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
               {/* Carrito para todos los usuarios autenticados */}
-              <div className="cart-indicator" onClick={onOpenCart} style={{ cursor: 'pointer', fontSize: '1.2rem' }}>
-                <span className="cart-badge">{cartCount}</span>
+              <div className="cart-indicator" onClick={onOpenCart} style={{ cursor: 'pointer', fontSize: '1.2rem', position: 'relative' }}>
+                🛒 
+                <span className="cart-badge" style={{ position: 'absolute', top: '-10px', right: '-15px', background: 'var(--arco-primary)', color: 'black', borderRadius: '50%', padding: '2px 6px', fontSize: '0.8rem', fontWeight: 'bold' }}>{cartCount}</span>
               </div>
 
               {/* Campana de Notificaciones */}

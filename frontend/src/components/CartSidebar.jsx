@@ -81,7 +81,7 @@ const CartSidebar = ({ cart, setCart, isAuthenticated, onClose }) => {
               <p className="text-muted" style={{fontSize: '0.9rem', marginTop: '1rem'}}>
                 🛒 <strong>Agrega productos</strong> para continuar. 
                 <br />
-                <span style={{color: 'var(--arco-primary)', cursor: 'pointer'}}>¿Ya tienes cuenta? Inicia sesión</span>
+                <span style={{color: 'var(--arco-primary)', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => { onClose(); navigate('/login'); }}>¿Ya tienes cuenta? Inicia sesión</span>
               </p>
             </div>
           )}
