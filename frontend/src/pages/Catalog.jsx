@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import './Catalog.css'
 
 const Catalog = ({ cart, setCart }) => {
+  const navigate = useNavigate()
   const [productos, setProductos] = useState([])
   const [filteredProductos, setFilteredProductos] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -63,6 +65,17 @@ const Catalog = ({ cart, setCart }) => {
         <div className="slogan-banner">"Cultivamos calidad, te llevamos frescura ésta es la mejor"</div>
         <h1 style={{ fontSize: '2.8rem' }}>Catálogo <span className="text-gradient">Siembra Mirandina</span></h1>
         <p className="text-muted">Productos frescos del campo a tu mesa.</p>
+        
+        {/* Call to Action: Pedidos Especiales (Visible en el Catálogo) */}
+        <div style={{ marginTop: '1.5rem' }}>
+           <button 
+             className="btn-primary" 
+             onClick={() => navigate('/cliente')} 
+             style={{ fontSize: '1.1rem', padding: '12px 30px', boxShadow: '0 4px 15px var(--arco-glow)' }}
+           >
+             🚛 Requisición Especial de Alto Volumen
+           </button>
+        </div>
       </div>
 
       {/* Buscador de Productos */}
