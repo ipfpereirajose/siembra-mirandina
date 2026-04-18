@@ -47,8 +47,8 @@ def dashboard_oferta_demanda(auth_ctx: dict = Depends(get_user_context)):
     supabase = get_supabase()
     # Solo admin
     # En un sistema real verificaríamos rol en auth_ctx
-    res_solicitudes = supabase.table('pedidos_personalizados').select('*, perfiles(nombre_completo), productos(nombre)').execute()
-    res_inventario = supabase.table('inventario').select('*, productos(nombre)').execute()
+    res_solicitudes = supabase.table('pedidos_personalizados').select('*, perfiles(nombre_completo), productos(nombre, unidad_medida)').execute()
+    res_inventario = supabase.table('inventario').select('*, productos(nombre, unidad_medida)').execute()
     
     return {
         "solicitudes": res_solicitudes.data,

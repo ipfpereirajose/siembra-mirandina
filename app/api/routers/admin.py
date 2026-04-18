@@ -39,9 +39,10 @@ def obtener_metricas_c_level(auth_ctx: dict = Depends(get_user_context)):
     res_inv = supabase.table('inventario').select('producto_id, stock_disponible').order('stock_disponible', desc=False).limit(5).execute()
     top_rotacion = []
     for item in res_inv.data:
-         p_info = supabase.table('productos').select('nombre').eq('id', item['producto_id']).single().execute()
+         p_info = supabase.table('productos').select('nombre, unidad_medida').eq('id', item['producto_id']).single().execute()
          nombre = p_info.data['nombre'] if p_info.data else "Item"
-         top_rotacion.append({"nombre": nombre, "stock_restante": item['stock_disponible']})
+         um = p_info.data.get('unidad_medida', 'Unidad') if p_info.data else "Unidad"
+         top_rotacion.append({"nombre": nombre, "stock_restante": item['stock_disponible'], "um": um})
          
     # 4. Traer los tickets pendientes
     try:

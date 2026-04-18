@@ -106,7 +106,7 @@ const AdminDashboard = ({ user }) => {
             {(stats?.top_productos || []).map((p, idx) => (
                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--border-glass)' }}>
                   <span>{p.nombre}</span>
-                  <span style={{ fontWeight: 'bold', color: p.stock_restante < 10 ? '#ef4444' : '#34D399' }}>{p.stock_restante} kg</span>
+                  <span style={{ fontWeight: 'bold', color: p.stock_restante < 10 ? '#ef4444' : '#34D399' }}>{p.stock_restante} {p.um || 'Unidades'}</span>
                </div>
             ))}
          </div>
@@ -173,7 +173,7 @@ const AdminDashboard = ({ user }) => {
                {ofertaDemanda.inventario_actual.map((item, idx) => (
                   <tr key={idx} style={{ borderBottom: '1px solid var(--border-glass)' }}>
                      <td style={{ padding: '12px' }}>{item.productos?.nombre}</td>
-                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.stock_disponible} kg</td>
+                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.stock_disponible} {item.productos?.unidad_medida || 'Unidades'}</td>
                      <td style={{ padding: '12px' }}>
                         <span style={{ 
                            padding: '4px 8px', 
