@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../components/ProductCard.css'
+import { useBCV } from '../hooks/useBCV'
 
 const Checkout = ({ cart, setCart, user }) => {
   const navigate = useNavigate()
@@ -10,6 +11,7 @@ const Checkout = ({ cart, setCart, user }) => {
 
   const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001'
   const total = cart.reduce((acc, item) => acc + ((item?.product?.precio_base_usd || 0) * (item?.quantity || 0)), 0)
+  const { tasa, fecha, aBs } = useBCV()
 
   // Redirigir si no hay nada en el carrito
   if (cart.length === 0 && !successId) {
@@ -118,7 +120,11 @@ const Checkout = ({ cart, setCart, user }) => {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '2px solid var(--border-glass)' }}>
           <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>Monto a Pagar:</span>
-          <span style={{ fontSize: '1.5rem', color: 'var(--miranda-primary)', fontWeight: 'bold' }}>${total.toFixed(2)}</span>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '1.5rem', color: 'var(--miranda-primary)', fontWeight: 'bold' }}>$ {total.toFixed(2)} USD</div>
+            <div style={{ fontSize: '1.1rem', color: '#34D399', fontWeight: 'bold' }}>{aBs(total)}</div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Tasa BCV: Bs. {tasa.toLocaleString('es-VE')} · {fecha}</div>
+          </div>
         </div>
       </div>
       

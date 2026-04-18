@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './CartSidebar.css'
+import { useBCV } from '../hooks/useBCV'
 
 const CartSidebar = ({ cart, setCart, isAuthenticated, onClose }) => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [successId, setSuccessId] = useState(null)
+  const { tasa, fecha, aBs } = useBCV()
 
   const total = cart.reduce((acc, item) => acc + ((item?.product?.precio_base_usd || 0) * (item?.quantity || 0)), 0)
 
@@ -78,8 +80,15 @@ const CartSidebar = ({ cart, setCart, isAuthenticated, onClose }) => {
         {!successId && cart.length > 0 && (
           <div className="cart-footer">
             <div className="cart-summary">
-              <span>Total Estimado (USD)</span>
-              <span style={{fontSize: '1.5rem', fontWeight:'bold', color: 'var(--arco-primary)'}}>${total.toFixed(2)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <span>Total Estimado (USD)</span>
+                <span style={{fontSize: '1.5rem', fontWeight:'bold', color: 'var(--arco-primary)'}}>$ {total.toFixed(2)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total en Bolívares</span>
+                <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#34D399' }}>{aBs(total)}</span>
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px', textAlign: 'right' }}>Tasa BCV: Bs. {tasa.toLocaleString('es-VE')} · {fecha}</div>
             </div>
             <button 
               className="btn-primary" 

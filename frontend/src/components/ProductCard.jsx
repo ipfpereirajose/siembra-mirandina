@@ -1,9 +1,11 @@
 import React, { useState, memo } from 'react'
 import './ProductCard.css'
+import { useBCV } from '../hooks/useBCV'
 
 const ProductCard = memo(({ product, onAdd }) => {
   const [qty, setQty] = useState(1)
   const [showSuccess, setShowSuccess] = useState(false)
+  const { tasa, fecha, aBs } = useBCV()
   
   const stockInfo = product.inventario || { stock_disponible: 0 }
   const inStock = stockInfo.stock_disponible > 0
@@ -47,8 +49,11 @@ const ProductCard = memo(({ product, onAdd }) => {
                 USD / {product.unidad_medida || 'Unidad'}
               </span>
             </div>
-            <div style={{ fontSize: '0.65rem', color: 'var(--miranda-accent)', marginTop: '2px', opacity: 0.8 }}>
-              * Precio referencial a tasa BCV
+            <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#34D399', marginTop: '2px' }}>
+              {aBs(product.precio_base_usd)} / {product.unidad_medida || 'Unidad'}
+            </div>
+            <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', marginTop: '2px', opacity: 0.7 }}>
+              Tasa BCV: Bs. {tasa.toLocaleString('es-VE')} · {fecha}
             </div>
           </div>
           
