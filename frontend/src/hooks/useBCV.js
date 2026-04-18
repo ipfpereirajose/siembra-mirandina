@@ -1,30 +1,36 @@
 import { useState, useEffect } from 'react'
 
-// Tasa BCV de fallback (última conocida) — se actualiza automáticamente via API
+// Tasa BCV de fallback (última conocida) — se usa mientras carga o si el backend falla
 const TASA_FALLBACK = 481.22
 
 /**
  * useBCV — Obtiene la tasa de cambio oficial BCV (USD → VES) del día.
- * Consume el endpoint público de ExchangeRate-API como proxy confiable.
- * Si falla, usa la última tasa conocida como fallback.
+ * 
+ * Arquitectura con triple redundancia:
+ *   1. Caché en memoria del servidor FastAPI (0 llamadas externas si ya fue consultada hoy)
+ *   2. Persistencia en Supabase (sobrevive reinicios del servidor)
+ *   3. Fallback estático si todo falla
  */
 export function useBCV() {
   const [tasa, setTasa] = useState(TASA_FALLBACK)
-  const [fecha, setFecha] = useState('')
+  const [fecha, setFecha] = useState(new Date().toLocaleDateString('es-VE'))
+  const [fuente, setFuente] = useState('fallback')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Intentar con un proxy gratuito de tasa VES/USD
-    fetch('https://api.exchangerate-api.com/v4/latest/USD')
+    const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001'
+    
+    fetch(`${API}/admin/tasa-bcv`)
       .then(r => r.json())
       .then(data => {
-        if (data?.rates?.VES) {
-          setTasa(Number(data.rates.VES.toFixed(2)))
-          setFecha(data.date || new Date().toLocaleDateString('es-VE'))
+        if (data?.tasa) {
+          setTasa(Number(data.tasa))
+          setFecha(data.fecha || new Date().toLocaleDateString('es-VE'))
+          setFuente(data.fuente || 'api')
         }
       })
       .catch(() => {
-        // Fallback silencioso: usar la tasa estática del día
+        // Silently use fallback — the UI still shows a rate
         setFecha(new Date().toLocaleDateString('es-VE'))
       })
       .finally(() => setLoading(false))
@@ -41,5 +47,6 @@ export function useBCV() {
     return `Bs. ${bs.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
-  return { tasa, fecha, loading, aBs }
+  return { tasa, fecha, fuente, loading, aBs }
 }
+
