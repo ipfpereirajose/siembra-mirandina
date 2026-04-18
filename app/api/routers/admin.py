@@ -18,9 +18,12 @@ def obtener_metricas_c_level(auth_ctx: dict = Depends(get_user_context)):
         
     supabase = get_supabase()
     
-    # 1. Traer todos los pedidos B2B
-    res_pedidos = supabase.table('pedidos').select('*').execute()
-    pedidos = res_pedidos.data
+    # 1. Traer todos los pedidos B2B o regulares
+    try:
+        res_pedidos = supabase.table('pedidos').select('*').execute()
+        pedidos = res_pedidos.data
+    except Exception:
+        pedidos = []
     
     # 2. Computar Ventas por Mes y Ganancias
     ventas_por_mes = defaultdict(float)
