@@ -54,6 +54,8 @@ const ProducerDashboard = ({ user }) => {
           producto_id: selection.producto_id === 'OTRO' ? null : selection.producto_id,
           nuevo_producto_nombre: selection.producto_id === 'OTRO' ? selection.nuevo_nombre : null,
           cantidad_disponible: parseFloat(selection.cantidad),
+          cantidad_en_venta: 0.0, // Inicia sin estar en venta por defecto
+          esta_en_venta: false,
           unidad_medida: selection.unidad,
           precio_propuesto_usd: selection.precio ? parseFloat(selection.precio) : null
         })
@@ -76,6 +78,41 @@ const ProducerDashboard = ({ user }) => {
         }
      });
      cargarDeclaraciones();
+  };
+
+  const toggleVenta = async (d) => {
+      // Toggle the boolean state
+      const newState = !d.esta_en_venta;
+      // If we are activating but have 0 assigned to sale, assign max available
+      const newCant = newState && (d.cantidad_en_venta === 0 || d.cantidad_en_venta == null) ? d.cantidad_disponible : d.cantidad_en_venta;
+
+      await fetch(`${API_URL}/produccion/actualizar-venta`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id, 'X-Empresa-Id': user.empresa_id },
+          body: JSON.stringify({
+              id: d.id,
+              esta_en_venta: newState,
+              cantidad_en_venta: parseFloat(newCant || 0)
+          })
+      });
+      cargarDeclaraciones();
+  };
+
+  const updateCantVenta = async (d, newCantStr) => {
+      let val = parseFloat(newCantStr);
+      if(isNaN(val) || val < 0) val = 0;
+      if(val > d.cantidad_disponible) val = d.cantidad_disponible;
+
+      await fetch(`${API_URL}/produccion/actualizar-venta`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id, 'X-Empresa-Id': user.empresa_id },
+          body: JSON.stringify({
+              id: d.id,
+              esta_en_venta: val > 0, // auto turn on if val > 0
+              cantidad_en_venta: val
+          })
+      });
+      cargarDeclaraciones();
   };
 
   const submitPuja = async (ordenId) => {
@@ -155,23 +192,49 @@ const ProducerDashboard = ({ user }) => {
         <h3 style={{ marginBottom: '1.5rem' }}>📋 Mi Disponibilidad Actual</h3>
         <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
           {misDeclaraciones.length === 0 ? <p className="text-muted">No has declarado producción aún.</p> : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
               <thead>
                 <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-glass)' }}>
-                  <th style={{ padding: '8px' }}>Rubro</th>
-                  <th style={{ padding: '8px' }}>Cant.</th>
-                  <th style={{ padding: '8px' }}>Unidad</th>
-                  <th style={{ padding: '8px' }}>Acción</th>
+                  <th style={{ padding: '8px' }}>Silo / Rubro</th>
+                  <th style={{ padding: '8px' }}>Total (Tu Finca)</th>
+                  <th style={{ padding: '8px' }}>Publicado (Catálogo)</th>
+                  <th style={{ padding: '8px' }}>Catálogo B2B</th>
+                  <th style={{ padding: '8px' }}>🗑️</th>
                 </tr>
               </thead>
               <tbody>
                 {misDeclaraciones.map(d => (
                   <tr key={d.id} style={{ borderBottom: '1px solid var(--border-glass)' }}>
-                    <td style={{ padding: '8px' }}>{d.productos?.nombre || 'Desconocido'}</td>
-                    <td style={{ padding: '8px' }}>{d.cantidad_disponible}</td>
-                    <td style={{ padding: '8px' }}>{d.unidad_medida}</td>
+                    <td style={{ padding: '8px', fontWeight: 'bold' }}>{d.productos?.nombre || 'Desconocido'}</td>
+                    <td style={{ padding: '8px', color: 'var(--text-muted)' }}>{d.cantidad_disponible} {d.unidad_medida}</td>
                     <td style={{ padding: '8px' }}>
-                      <button className="btn-outline" style={{ padding: '4px 8px', color: '#ef4444' }} onClick={() => eliminarDeclaracion(d.id)}>Eliminar</button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <input 
+                                type="number" 
+                                className="glass-input" 
+                                style={{ width: '70px', padding: '4px', textAlign: 'center', background: d.esta_en_venta ? 'rgba(52, 211, 153, 0.1)' : 'var(--bg-glass)' }}
+                                defaultValue={d.cantidad_en_venta || 0}
+                                onBlur={(e) => updateCantVenta(d, e.target.value)}
+                            />
+                            <span style={{ fontSize: '0.8rem' }}>{d.unidad_medida}</span>
+                        </div>
+                    </td>
+                    <td style={{ padding: '8px' }}>
+                        <button 
+                            className="btn-outline" 
+                            style={{ 
+                                padding: '4px 10px', 
+                                background: d.esta_en_venta ? 'var(--arco-primary)' : 'transparent',
+                                color: d.esta_en_venta ? '#000' : 'var(--text-main)',
+                                border: d.esta_en_venta ? 'none' : '1px solid var(--border-glass)'
+                            }} 
+                            onClick={() => toggleVenta(d)}
+                        >
+                            {d.esta_en_venta ? '👁️ Activo' : '⏸️ Pausado'}
+                        </button>
+                    </td>
+                    <td style={{ padding: '8px' }}>
+                      <button className="btn-outline" style={{ padding: '4px 8px', color: '#ef4444', border: 'none' }} onClick={() => eliminarDeclaracion(d.id)}>✖</button>
                     </td>
                   </tr>
                 ))}

@@ -53,6 +53,7 @@ def procesar_checkout(usuario_id: str, empresa_id: str, payload: CheckoutRequest
             productos_a_descontar.append({
                 "producto_id": str(linea.producto_id),
                 "nuevo_stock": stock - linea.cantidad,
+                "cantidad": linea.cantidad,
                 "umbral_alerta": inv_res.data.get('umbral_alerta', 5) if inv_res.data else 5
             })
             
@@ -75,13 +76,44 @@ def procesar_checkout(usuario_id: str, empresa_id: str, payload: CheckoutRequest
         
         supabase.table('lineas_pedido').insert(lineas_procesadas).execute()
         
-        # 3. Deducir Inventario y Calcular Alertas
+        # 3. Deducir Inventario por Productor (FIFO) y Calcular Alertas
         alertas_stock = []
         for pd in productos_a_descontar:
-            supabase.table('inventario').update({"stock_disponible": pd["nuevo_stock"]}).eq("producto_id", pd["producto_id"]).execute()
+            prod_id = pd["producto_id"]
+            restante_a_descontar = pd["cantidad"]
+            
+            # Traer ofertas de productores para este producto ordendas por antigüedad (FIFO)
+            ofertas_res = supabase.table('produccion_productor').select('*').eq('producto_id', prod_id).eq('esta_en_venta', True).gt('cantidad_en_venta', 0).order('created_at', desc=False).execute()
+            
+            for oferta in ofertas_res.data:
+                if restante_a_descontar <= 0:
+                    break
+                
+                disp_venta = float(oferta['cantidad_en_venta'])
+                disp_total = float(oferta['cantidad_disponible'])
+                
+                if disp_venta <= restante_a_descontar:
+                    # Se consume toda esta oferta
+                    restante_a_descontar -= disp_venta
+                    # Actualizar a 0 y sacar de venta
+                    supabase.table('produccion_productor').update({
+                        "cantidad_en_venta": 0,
+                        "esta_en_venta": False,
+                        "cantidad_disponible": disp_total - disp_venta
+                    }).eq('id', oferta['id']).execute()
+                else:
+                    # Se consume parcialmente esta oferta
+                    supabase.table('produccion_productor').update({
+                        "cantidad_en_venta": disp_venta - restante_a_descontar,
+                        "cantidad_disponible": disp_total - restante_a_descontar
+                    }).eq('id', oferta['id']).execute()
+                    restante_a_descontar = 0
+            
+            # El trigger de la DB actualiza automáticamente el 'inventario' global
+            
             if pd["nuevo_stock"] <= pd["umbral_alerta"]:
                 alertas_stock.append({
-                    "producto_id": pd["producto_id"],
+                    "producto_id": prod_id,
                     "stock_actual": pd["nuevo_stock"],
                     "umbral": pd["umbral_alerta"]
                 })

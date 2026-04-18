@@ -94,8 +94,16 @@ class ProduccionCreate(BaseModel):
     producto_id: Optional[UUID] = None
     nuevo_producto_nombre: Optional[str] = None # Para rubros no listados
     cantidad_disponible: float
+    cantidad_en_venta: Optional[float] = 0.0
+    esta_en_venta: Optional[bool] = False
     unidad_medida: str # Sacos, Kg, Huacales, Cajas, Unidades
     precio_propuesto_usd: Optional[float] = None
+
+class ProduccionUpdateVenta(BaseModel):
+    id: UUID
+    cantidad_en_venta: float
+    esta_en_venta: bool
+
 
 class PedidoPersonalizadoCreate(BaseModel):
     producto_id: UUID
