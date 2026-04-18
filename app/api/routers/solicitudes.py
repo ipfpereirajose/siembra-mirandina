@@ -1,31 +1,43 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.db.supabase_client import get_supabase
-from app.models.schemas import PedidoPersonalizadoCreate
+from app.models.schemas import RequisicionMasivaCreate
 from app.api.routers.comercio import get_user_context
 from typing import List
 
 router_solicitudes = APIRouter(prefix="/solicitudes", tags=["Pedidos Personalizados"])
 
 @router_solicitudes.post("/crear")
-def crear_solicitud_personalizada(payload: PedidoPersonalizadoCreate, auth_ctx: dict = Depends(get_user_context)):
+def crear_solicitud_personalizada(payload: RequisicionMasivaCreate, auth_ctx: dict = Depends(get_user_context)):
     """
-    Permite a un cliente empresarial crear un pedido a medida.
+    Permite a un cliente empresarial crear un pedido a medida, con múltiples filas (bulk).
     """
     supabase = get_supabase()
     try:
         # Recuperar categoría automáticamente si no se envía
-        # En el MVP usaremos lo que venga en el producto_id
-        res = supabase.table('pedidos_personalizados').insert({
-            "cliente_id": str(auth_ctx["usuario_id"]),
-            "producto_id": str(payload.producto_id),
-            "cantidad": payload.cantidad,
-            "unidad_medida": payload.unidad_medida,
-            # El administrador asignará el precio luego
-            "estado": "PENDIENTE"
-        }).execute()
-        return {"mensaje": "Solicitud enviada al administrador.", "data": res.data}
+        # En el MVP armamos un array de records y lo lanzamos a supabase bulk insert
+        records = []
+        for row in payload.filas:
+            records.append({
+                "cliente_id": str(auth_ctx["usuario_id"]),
+                "producto_id": str(row.producto_id),
+                "cantidad": row.cantidad,
+                "unidad_medida": row.unidad_medida,
+                "estado": "PENDIENTE_COTIZACION"
+            })
+            
+        res = supabase.table('pedidos_personalizados').insert(records).execute()
+        return {"mensaje": "Requisición masiva enviada al administrador.", "data": res.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+@router_solicitudes.get("/mis-solicitudes")
+def obtener_historial_solicitudes(auth_ctx: dict = Depends(get_user_context)):
+    """
+    Devuelve las solicitudes agrupadas para el Dashboard del Cliente 
+    """
+    supabase = get_supabase()
+    res = supabase.table('pedidos_personalizados').select('*, productos(nombre)').eq('cliente_id', str(auth_ctx["usuario_id"])).order('created_at', desc=True).execute()
+    return res.data
 
 @router_solicitudes.get("/oferta-demanda")
 def dashboard_oferta_demanda(auth_ctx: dict = Depends(get_user_context)):

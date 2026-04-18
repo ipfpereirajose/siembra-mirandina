@@ -103,6 +103,9 @@ class PedidoPersonalizadoCreate(BaseModel):
     unidad_medida: str
     precio_referencial_usd: Optional[float] = None
 
+class RequisicionMasivaCreate(BaseModel):
+    filas: List[PedidoPersonalizadoCreate] = Field(..., min_length=1)
+
 class NotificacionResponse(BaseModel):
     id: UUID
     titulo: str
