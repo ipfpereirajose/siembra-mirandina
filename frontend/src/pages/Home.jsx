@@ -58,18 +58,18 @@ const Home = ({ cart, setCart }) => {
     return () => clearInterval(interval)
   }, [])
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = (product, qty = 1) => {
     // Agregar producto al carrito usando la estructura { product, quantity } consistente con Catalog
     const existingIdx = cart.findIndex(item => item.product?.id === product.id)
     
     if (existingIdx >= 0) {
       // Si ya existe, aumentar cantidad
       const newCart = [...cart]
-      newCart[existingIdx].quantity += 1
+      newCart[existingIdx].quantity += qty
       setCart(newCart)
     } else {
       // Agregar nuevo producto
-      setCart([...cart, { product, quantity: 1 }])
+      setCart([...cart, { product, quantity: qty }])
     }
   }
 
@@ -148,7 +148,7 @@ const Home = ({ cart, setCart }) => {
         <div className="products-grid">
           {productosFiltrados.map(p => (
             <div key={p.id} style={{ cursor: 'pointer' }}>
-              <ProductCard product={p} onAdd={() => handleAddToCart(p)} />
+              <ProductCard product={p} onAdd={handleAddToCart} />
             </div>
           ))}
           {productosFiltrados.length === 0 && (

@@ -26,7 +26,10 @@ const App = memo(() => {
   const [cart, setCart] = useState(() => {
     try {
       const saved = localStorage.getItem('siembra_cart')
-      return saved ? JSON.parse(saved) : []
+      if(!saved) return []
+      const parsed = JSON.parse(saved)
+      if(!Array.isArray(parsed)) return []
+      return parsed.filter(item => item?.product?.id && Number.isFinite(item.quantity) && item.quantity > 0)
     } catch {
       return []
     }

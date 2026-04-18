@@ -65,7 +65,7 @@ const ProductCard = memo(({ product, onAdd }) => {
             <button 
               className="btn-primary" 
               onClick={() => {
-                onAdd(product)
+                onAdd(product, qty)
                 setShowSuccess(true)
                 setTimeout(() => setShowSuccess(false), 2000)
               }} 
