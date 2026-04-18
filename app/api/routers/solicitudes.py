@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.db.supabase_client import get_supabase
-from app.models.schemas import RequisicionMasivaCreate
+from app.models.schemas import RequisicionMasivaCreate, ActualizarEstadoPedido, AporteProductorCreate, ValidarPagoPedido
 from app.api.routers.comercio import get_user_context
 from typing import List
 
@@ -54,3 +54,40 @@ def dashboard_oferta_demanda(auth_ctx: dict = Depends(get_user_context)):
         "solicitudes": res_solicitudes.data,
         "inventario_actual": res_inventario.data
     }
+
+@router_solicitudes.put("/estado")
+def actualizar_estado_solicitud(payload: ActualizarEstadoPedido, auth_ctx: dict = Depends(get_user_context)):
+    """ Administrador avanza el estatus o Cliente Acepta Contra-oferta """
+    supabase = get_supabase()
+    res = supabase.table('pedidos_personalizados').update({'estado': payload.nuevo_estado}).eq('id', str(payload.id_orden)).execute()
+    return {"mensaje": "Estado actualizado", "data": res.data}
+
+@router_solicitudes.get("/subastas")
+def obtener_subastas_abiertas(auth_ctx: dict = Depends(get_user_context)):
+    """ Productores ven qué piezas faltan en el sistema """
+    supabase = get_supabase()
+    # Trae solicitudes en estado 'SUBASTA_ABIERTA' y calcular cuotas faltantes uniendo aportes
+    res = supabase.table('pedidos_personalizados').select('*, productos(nombre), aportes_productores(*)').eq('estado', 'SUBASTA_ABIERTA').execute()
+    return res.data
+
+@router_solicitudes.post("/aportes")
+def registrar_aporte(payload: AporteProductorCreate, auth_ctx: dict = Depends(get_user_context)):
+    """ Un productor puja una cantidad para suplir el déficit de un pedido """
+    supabase = get_supabase()
+    res = supabase.table('aportes_productores').insert({
+        "pedido_personalizado_id": str(payload.id_orden),
+        "productor_id": str(auth_ctx["usuario_id"]),
+        "cantidad_aportada": payload.cantidad,
+        "estado": "COMPROMETIDO"
+    }).execute()
+    return {"mensaje": "Aporte registrado con éxito en el sistema ciego.", "data": res.data}
+
+@router_solicitudes.post("/pago")
+def validar_pago_cliente(payload: ValidarPagoPedido, auth_ctx: dict = Depends(get_user_context)):
+    """ El cliente sube el recibo """
+    supabase = get_supabase()
+    res = supabase.table('pedidos_personalizados').update({
+        'url_comprobante': payload.url_comprobante,
+        'estado': 'PAGO_POR_VERIFICAR'
+    }).eq('id', str(payload.id_orden)).execute()
+    return {"mensaje": "Pago subido. Esperando verificación.", "data": res.data}

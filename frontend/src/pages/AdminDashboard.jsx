@@ -23,6 +23,8 @@ const AdminDashboard = ({ user }) => {
       ])
       
       const dataStats = await resStats.json()
+      // Actualizamos este endpoint para traer la data consolidada si es necesario, 
+      // Por ahora la logica de subastas esta en /solicitudes/oferta-demanda
       const dataOD = await resOD.json()
       
       setStats(dataStats)
@@ -30,6 +32,23 @@ const AdminDashboard = ({ user }) => {
       setLoading(false)
     } catch (err) {
       console.error("Error Admin", err)
+    }
+  }
+
+  const cambiarEstado = async (id, nuevoEstado) => {
+    try {
+      await fetch(`${API}/solicitudes/estado`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id,
+          'x-empresa-id': user.empresa_id
+        },
+        body: JSON.stringify({ id_orden: id, nuevo_estado: nuevoEstado })
+      })
+      cargarTodo()
+    } catch (err) {
+      alert("Error contactando backend")
     }
   }
 
@@ -138,18 +157,42 @@ const AdminDashboard = ({ user }) => {
 
       {activeTab === 'PEDIDOS_ESP' && (
         <div className="glass-panel" style={{ padding: '2rem' }}>
-           <h3>Tablero Oferta y Demanda (Personalizados)</h3>
-           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
-              {ofertaDemanda.solicitudes.length === 0 ? <p className="text-muted">Sin solicitudes pendientes.</p> : (
+           <h3>Evaluador Fase 2: Requisiciones y Subastas</h3>
+           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+              {ofertaDemanda.solicitudes.length === 0 ? <p className="text-muted">Sin flujo actual.</p> : (
                  ofertaDemanda.solicitudes.map(sol => (
-                    <div key={sol.id} className="glass-card" style={{ padding: '1.5rem', borderLeft: '4px solid var(--miranda-primary)' }}>
+                    <div key={sol.id} className="glass-card" style={{ padding: '1.5rem', borderLeft: sol.estado === 'PENDIENTE' ? '4px solid var(--miranda-primary)' : sol.estado === 'PAGO_POR_VERIFICAR' ? '4px solid #34D399' : '4px solid #F59E0B' }}>
                        <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{sol.productos?.nombre}</div>
                        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Cliente: {sol.perfiles?.nombre_completo}</div>
-                       <div style={{ marginTop: '1rem', fontSize: '1.2rem', fontWeight: 'bold' }}>{sol.cantidad} {sol.unidad_medida}</div>
-                       <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Estado: {sol.estado}</p>
-                       <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem' }}>
-                          <button className="btn-primary" style={{ flex: 1, fontSize: '0.85rem' }}>Despachar Almacén</button>
-                          <button className="btn-outline" style={{ flex: 1, fontSize: '0.85rem' }}>Poner en Espera</button>
+                       <div style={{ marginTop: '0.5rem', fontSize: '1.2rem', fontWeight: 'bold' }}>Solicita: {sol.cantidad} {sol.unidad_medida}</div>
+                       <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>ESTADO: <strong style={{ color: 'var(--arco-primary)' }}>{sol.estado}</strong></p>
+                       
+                       {sol.estado === 'PAGO_POR_VERIFICAR' && sol.url_comprobante && (
+                          <div style={{ marginTop: '1rem', background: 'rgba(52,211,153,0.1)', padding: '10px', borderRadius: '8px' }}>
+                             <p style={{fontSize:'0.8rem', marginBottom:'5px'}}>💳 Comprobante Anexo:</p>
+                             <a href={sol.url_comprobante} target="_blank" rel="noreferrer" style={{color: '#34D399', fontSize: '0.85rem', wordBreak: 'break-all'}}>{sol.url_comprobante.substring(0, 40)}...</a>
+                          </div>
+                       )}
+
+                       <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          {sol.estado === 'PENDIENTE' && (
+                             <>
+                              <button className="btn-primary" style={{ flex: 1, fontSize: '0.75rem', padding: '8px' }} onClick={() => cambiarEstado(sol.id, 'CONTRA_OFERTA')}>✅ Abastecer Central (Generar Contra.)</button>
+                              <button className="btn-outline" style={{ flex: 1, fontSize: '0.75rem', padding: '8px' }} onClick={() => cambiarEstado(sol.id, 'SUBASTA_ABIERTA')}>📡 Auxilio a Productores</button>
+                             </>
+                          )}
+                          
+                          {sol.estado === 'SUBASTA_ABIERTA' && (
+                             <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem' }} onClick={() => cambiarEstado(sol.id, 'CONTRA_OFERTA')}>Cerrar Subasta & Mover Contra-Oferta</button>
+                          )}
+
+                          {sol.estado === 'PAGO_POR_VERIFICAR' && (
+                             <button className="btn-primary" style={{ width: '100%', background: '#34D399', color: 'black', fontWeight: 'bold', fontSize: '0.85rem' }} onClick={() => cambiarEstado(sol.id, 'EJECUTAR')}>🛠 Ejecutar Pedido & Notificar Despachos</button>
+                          )}
+
+                          {sol.estado === 'EJECUTAR' && (
+                             <button className="btn-outline" style={{ width: '100%', fontSize: '0.85rem', color: '#10b981', borderColor: '#10b981' }} disabled>Orden En Proceso de Logística</button>
+                          )}
                        </div>
                     </div>
                  ))

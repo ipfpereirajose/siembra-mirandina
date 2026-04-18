@@ -13,6 +13,10 @@ const CustomerDashboard = ({ user }) => {
   const [isPreviewMode, setIsPreviewMode] = useState(false)
   const [reqRows, setReqRows] = useState([{ id: Date.now(), producto_id: '', cantidad: 1 }])
   const [loading, setLoading] = useState(false)
+  
+  // Checkout Modal B2B
+  const [ordenActivaPago, setOrdenActivaPago] = useState(null)
+  const [reciboBase64, setReciboBase64] = useState('')
 
   const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001'
   const isB2B = user?.rol === 'CLIENTE_EMPRESA'
@@ -98,10 +102,46 @@ const CustomerDashboard = ({ user }) => {
     }
   }
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0]
+    if(!file) return
+    const reader = new FileReader()
+    reader.onloadend = () => {
+       setReciboBase64(reader.result)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const enviarRecibo = async () => {
+    if(!reciboBase64) return alert("Por favor cargue la foto de su factura/transferencia.")
+    setLoading(true)
+    try {
+      const res = await fetch(`${API}/solicitudes/pago`, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json', 'x-user-id': user.id },
+         body: JSON.stringify({ id_orden: ordenActivaPago, url_comprobante: reciboBase64 })
+      })
+      if(res.ok) {
+         alert("¡Pago procesado exitosamente! El administrador lo verificará para el despacho.")
+         setOrdenActivaPago(null)
+         setReciboBase64('')
+         cargarDatos()
+      } else {
+         alert("Error procesando pago.")
+      }
+    } catch(e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const getStatusBadge = (estado) => {
     const st = (estado || 'PENDIENTE').toUpperCase()
-    if(st === 'COMPLETADO' || st === 'ENTREGADO' || st === 'APROBADO_FINAL') return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(52, 211, 153, 0.1)', color: '#10b981', fontSize: '0.8rem'}}>🟢 Aprobado / Listo</span>
-    if(st === 'PROCESANDO' || st === 'APROBADO' || st === 'PENDIENTE_COTIZACION') return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontSize: '0.8rem'}}>🔵 Negociando/Evaluando</span>
+    if(st === 'COMPLETADO' || st === 'EJECUTADO' || st === 'ENTREGADO' || st === 'APROBADO_FINAL') return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(52, 211, 153, 0.1)', color: '#10b981', fontSize: '0.8rem'}}>🟢 Aprobado / Listo</span>
+    if(st === 'CONTRA_OFERTA') return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontSize: '0.8rem', fontWeight: 'bold', border: '1px solid #ef4444'}}>🚨 ACCIÓN REQUERIDA (OFERTA LISTA)</span>
+    if(st === 'PAGO_POR_VERIFICAR') return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', fontSize: '0.8rem'}}>⏳ Recibo Anexado (Auditoría)</span>
+    if(st === 'PROCESANDO' || st === 'SUBASTA_ABIERTA' || st === 'APROBADO' || st === 'PENDIENTE_COTIZACION') return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontSize: '0.8rem'}}>🔵 Negociando/Evaluando</span>
     return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(251, 191, 36, 0.1)', color: '#f59e0b', fontSize: '0.8rem'}}>🟡 Pendiente Base</span>
   }
 
@@ -250,17 +290,42 @@ const CustomerDashboard = ({ user }) => {
                    <>
                      {/* TABLA DE SOLICITUDES ESPECIALES */}
                      {misSolicitudes.map(ped => (
-                        <div key={ped.id || Math.random()} className="glass-card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: '4px solid var(--arco-focus)' }}>
-                           <div>
-                              <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Requisición Especial: #{ped.id?.substring(0,8).toUpperCase() || 'N/A'}</div>
-                              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                <span>📅 {ped.created_at ? new Date(ped.created_at).toLocaleDateString() : 'N/A'}</span>
-                                <span>📑 {ped.productos?.nombre || 'Producto'} (x{ped.cantidad || 0} {ped.unidad_medida || 'Unidades'})</span>
+                        <div key={ped.id || Math.random()} className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', borderLeft: ped.estado === 'CONTRA_OFERTA' ? '4px solid #ef4444' : '4px solid var(--arco-focus)' }}>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                               <div>
+                                  <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>Requisición Especial: #{ped.id?.substring(0,8).toUpperCase() || 'N/A'}</div>
+                                  <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.4rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    <span>📅 {ped.created_at ? new Date(ped.created_at).toLocaleDateString() : 'N/A'}</span>
+                                    <span>📑 {ped.productos?.nombre || 'Producto'} (x{ped.cantidad || 0} {ped.unidad_medida || 'Unidades'})</span>
+                                  </div>
+                               </div>
+                               <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                                  <div>{getStatusBadge(ped.estado)}</div>
+                               </div>
+                           </div>
+
+                           {/* WIDGET DE PAGO Y APROBACIÓN */}
+                           {ped.estado === 'CONTRA_OFERTA' && ordenActivaPago !== ped.id && (
+                              <div style={{ marginTop: '1rem', background: 'rgba(239, 68, 68, 0.05)', padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                 <p style={{ margin: 0, fontSize: '0.9rem' }}>Su pedido fue abastecido. Puede confirmar el pago para liberar el inventario.</p>
+                                 <button className="btn-primary" style={{ background: '#ef4444' }} onClick={() => setOrdenActivaPago(ped.id)}>💵 Aceptar Presupuesto & Pagar</button>
                               </div>
-                           </div>
-                           <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-                              <div>{getStatusBadge(ped.estado)}</div>
-                           </div>
+                           )}
+
+                           {ordenActivaPago === ped.id && (
+                              <div className="fade-in" style={{ marginTop: '1rem', background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                 <h4 style={{ margin: '0 0 1rem 0' }}>Anexar Soporte de Transacción 🧾</h4>
+                                 <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Cargue la imagen de su transferencia bancaria o captura de pantalla del pago. Esto asegurará logísticamente su Proforma.</p>
+                                 
+                                 <input type="file" accept="image/*" onChange={handleFileUpload} style={{ marginBottom: '1rem', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '4px', width: '100%', background: 'white' }} />
+                                 {reciboBase64 && <div style={{ marginBottom: '1rem' }}><img src={reciboBase64} alt="Preview" style={{ maxWidth: '150px', borderRadius: '8px', border: '2px solid #34D399' }} /></div>}
+
+                                 <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <button className="btn-outline" onClick={() => {setOrdenActivaPago(null); setReciboBase64('')}}>Cancelar</button>
+                                    <button className="btn-primary" style={{ background: '#10b981' }} onClick={enviarRecibo} disabled={loading}>{loading ? 'Subiendo...' : 'Verificar Pago & Concluir Orden'}</button>
+                                 </div>
+                              </div>
+                           )}
                         </div>
                      ))}
                      {/* TABLA DE COMPRAS CARRITO REGULAR */}

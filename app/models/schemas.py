@@ -106,6 +106,18 @@ class PedidoPersonalizadoCreate(BaseModel):
 class RequisicionMasivaCreate(BaseModel):
     filas: List[PedidoPersonalizadoCreate] = Field(..., min_length=1)
 
+class ActualizarEstadoPedido(BaseModel):
+    id_orden: UUID
+    nuevo_estado: str # Ej: SUBASTA_ABIERTA, CONTRA_OFERTA, EJECUTADO
+
+class AporteProductorCreate(BaseModel):
+    id_orden: UUID
+    cantidad: float
+
+class ValidarPagoPedido(BaseModel):
+    id_orden: UUID
+    url_comprobante: str
+
 class NotificacionResponse(BaseModel):
     id: UUID
     titulo: str

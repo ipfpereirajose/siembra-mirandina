@@ -5,6 +5,9 @@ const ProducerDashboard = ({ user }) => {
   const [misDeclaraciones, setMisDeclaraciones] = useState([]);
   const [selection, setSelection] = useState({ producto_id: '', nuevo_nombre: '', cantidad: '', unidad: 'Kg', precio: '' });
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('PRODUCCION'); 
+  const [subastas, setSubastas] = useState([]);
+  const [pujaQty, setPujaQty] = useState({});
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001';
 
@@ -14,7 +17,16 @@ const ProducerDashboard = ({ user }) => {
       .then(data => setRubros(data));
     
     cargarDeclaraciones();
+    cargarSubastas();
   }, []);
+
+  const cargarSubastas = () => {
+    fetch(`${API_URL}/solicitudes/subastas`, {
+        headers: { 'X-User-Id': user.id }
+    })
+      .then(res => res.json())
+      .then(data => setSubastas(data || []));
+  }
 
   const cargarDeclaraciones = () => {
     fetch(`${API_URL}/produccion/mis-declaraciones`, {
@@ -66,7 +78,32 @@ const ProducerDashboard = ({ user }) => {
      cargarDeclaraciones();
   };
 
+  const submitPuja = async (ordenId) => {
+    const qty = parseFloat(pujaQty[ordenId] || 0)
+    if(qty <= 0) return alert("Ingrese una cantidad válida")
+    
+    try {
+        await fetch(`${API_URL}/solicitudes/aportes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id },
+            body: JSON.stringify({ id_orden: ordenId, cantidad: qty })
+        })
+        alert("Aporte registrado en sistema. Se le notificará si el cliente acepta la orden global.")
+        setPujaQty({...pujaQty, [ordenId]: ''})
+        cargarSubastas()
+    } catch(e) {
+        alert("Error de subasta")
+    }
+  }
+
   return (
+    <div>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+         <button className={`btn-outline ${activeTab === 'PRODUCCION' ? 'miranda-tab-active' : ''}`} onClick={() => setActiveTab('PRODUCCION')}>🚜 Mi Producción Base</button>
+         <button className={`btn-outline ${activeTab === 'DEMANDA' ? 'miranda-tab-active' : ''}`} onClick={() => setActiveTab('DEMANDA')}>📈 Demandas Urgentes del Mercado</button>
+      </div>
+
+    {activeTab === 'PRODUCCION' ? (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
       <div className="glass-panel" style={{ padding: '2rem' }}>
         <h3 style={{ marginBottom: '1.5rem' }}>🌱 Declarar Nueva Producción</h3>
@@ -143,6 +180,49 @@ const ProducerDashboard = ({ user }) => {
           )}
         </div>
       </div>
+    </div>
+    ) : (
+      <div className="glass-panel fade-in" style={{ padding: '2rem' }}>
+         <h3 style={{ marginBottom: '1.5rem', color: 'var(--arco-primary)' }}>🆘 Mercado Ciego: Requisiciones Corporativas</h3>
+         <p className="text-muted" style={{ marginBottom: '2rem' }}>Las siguientes requisiciones no pudieron ser abastecidas 100% por el Acopio Central. ¡Aporta lo que tengas disponible para consolidar el bulto y asegurar tu venta!</p>
+         
+         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+            {subastas.length === 0 ? <p className="text-muted">No hay subastas abiertas por los momentos.</p> : (
+               subastas.map((sub) => {
+                  const aportadoLog = (sub.aportes_productores || [])
+                  const aportadoTotal = aportadoLog.reduce((acc, a) => acc + a.cantidad_aportada, 0)
+                  const meta = sub.cantidad
+                  const restante = meta - aportadoTotal
+                  const miAportePrevio = aportadoLog.find(a => a.productor_id === user.id)
+
+                  if(restante <= 0) return null // Ya la consiguieron
+
+                  return (
+                     <div key={sub.id} className="glass-card" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+                        {miAportePrevio && <div style={{position:'absolute', top: 5, right: 10, fontSize: '0.8rem', background: 'rgba(52,211,153,0.2)', color: '#10b981', padding: '2px 8px', borderRadius: '10px'}}>Ya aportaste {miAportePrevio.cantidad_aportada}</div>}
+                        
+                        <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{sub.productos?.nombre}</div>
+                        <div style={{ marginTop: '1rem' }}>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                              <span>Faltan:</span>
+                              <span style={{ fontWeight: 'bold', color: '#ef4444' }}>{restante} {sub.unidad_medida}</span>
+                           </div>
+                           <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}>
+                              <div style={{ width: `${(aportadoTotal / meta)*100}%`, height: '100%', background: 'var(--arco-primary)', borderRadius: '4px' }}></div>
+                           </div>
+                        </div>
+
+                        <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem' }}>
+                           <input type="number" min="1" max={restante} className="glass-input" placeholder="Tu Aporte" value={pujaQty[sub.id] || ''} onChange={e => setPujaQty({...pujaQty, [sub.id]: e.target.value})} style={{ width: '100px' }} />
+                           <button className="btn-primary" style={{ flex: 1 }} onClick={() => submitPuja(sub.id)}>Inyectar Pujar</button>
+                        </div>
+                     </div>
+                  )
+               })
+            )}
+         </div>
+      </div>
+    )}
     </div>
   );
 };
