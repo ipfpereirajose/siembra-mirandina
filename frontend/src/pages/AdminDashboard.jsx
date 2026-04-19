@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import './Catalog.css'
 import './AdminDashboard.css'
@@ -5,7 +6,6 @@ import './AdminDashboard.css'
 const AdminDashboard = ({ user }) => {
   const [stats, setStats] = useState(null)
   const [ofertaDemanda, setOfertaDemanda] = useState({ solicitudes: [], inventario_actual: [] })
-  const [pedidosRegulares, setPedidosRegulares] = useState([])
   const [loading, setLoading] = useState(true)
   const [showSupport, setShowSupport] = useState(false)
 
@@ -27,8 +27,6 @@ const AdminDashboard = ({ user }) => {
       
       setStats(resStats.ok ? dataStats : null)
       setOfertaDemanda(resOD.ok ? dataOD : { solicitudes: [], inventario_actual: [] })
-      
-      setPedidosRegulares([])
       setLoading(false)
     } catch (err) {
       console.error("Error Admin", err)
@@ -100,7 +98,7 @@ const AdminDashboard = ({ user }) => {
                </div>
            </div>
            
-           {/* Botón de Soporte Oculto */}
+           {/* Botón de Soporte */}
            <div style={{ position: 'relative' }}>
               <button className="btn-outline" onClick={() => setShowSupport(!showSupport)}>🛠️ Soporte</button>
               {showSupport && (
@@ -139,7 +137,8 @@ const AdminDashboard = ({ user }) => {
             ))}
          </div>
       </div>
-      {/* BLOQUE REQUISICIONES / SUBASTAS / PAGOS REGULARES */}
+
+      {/* BLOQUE REQUISICIONES / SUBASTAS / PAGOS */}
       <div className="glass-panel" style={{ padding: '2rem', marginBottom: '3rem' }}>
          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3>Evaluador Central: Requisiciones y Pagos (B2B & Regular)</h3>
@@ -170,7 +169,6 @@ const AdminDashboard = ({ user }) => {
                      
                      <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>ESTADO: <strong style={{ color: 'var(--arco-primary)' }}>{sol.estado}</strong></p>
                      
-                     {/* COMPROBANTE UNIFICADO */}
                      {sol.url_comprobante && (
                         <div style={{ marginTop: '1rem', background: 'rgba(52,211,153,0.1)', padding: '10px', borderRadius: '8px' }}>
                            <p style={{fontSize:'0.8rem', marginBottom:'5px'}}>💳 Comprobante / Referencia:</p>
@@ -190,10 +188,6 @@ const AdminDashboard = ({ user }) => {
                            </>
                         )}
                         
-                        {sol.estado === 'SUBASTA_ABIERTA' && (
-                           <button className="btn-primary" style={{ width: '100%', fontSize: '0.85rem' }} onClick={() => cambiarEstado(sol.id, 'CONTRA_OFERTA')}>Cerrar Subasta & Mover Contra-Oferta</button>
-                        )}
-
                         {(sol.estado === 'PAGO_POR_VERIFICAR' || sol.estado === 'ESPERA_PAGO') && (
                            <button className="btn-primary" style={{ width: '100%', background: '#34D399', color: 'black', fontWeight: 'bold', fontSize: '0.85rem' }} onClick={() => confirmarPago(sol.id, sol.es_personalizado)}>🛠 Verificar Pago & Procesar Despachos</button>
                         )}
@@ -208,47 +202,46 @@ const AdminDashboard = ({ user }) => {
          </div>
       </div>
 
-      {/* BLOQUE INVENTARIO SENCILLO (ANTES PESTAÑA) */}
-
+      {/* BLOQUE INVENTARIO */}
       <div className="glass-panel" style={{ padding: '2rem' }}>
          <h3>Inventario Centralizado</h3>
          <div className="table-responsive">
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-            <thead>
-               <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-glass)' }}>
-                  <th style={{ padding: '12px' }}>Producto</th>
-                  <th style={{ padding: '12px' }}>Stock Global</th>
-                  <th style={{ padding: '12px' }}>Estado</th>
-                  <th style={{ padding: '12px' }}>Última Actualización</th>
-               </tr>
-            </thead>
-            <tbody>
-               {(ofertaDemanda?.inventario_actual || []).length === 0 ? (
-                  <tr><td colSpan="4" style={{ padding: '12px', textAlign: 'center', color: 'var(--text-muted)' }}>No hay inventario centralizado registrado.</td></tr>
-               ) : (
-                 (ofertaDemanda?.inventario_actual || []).map((item, idx) => (
-                   <tr key={idx} style={{ borderBottom: '1px solid var(--border-glass)' }}>
-                      <td style={{ padding: '12px' }}>{item.productos?.nombre || 'Desconocido'}</td>
-                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.stock_disponible} {item.productos?.unidad_medida || 'Unidades'}</td>
-                     <td style={{ padding: '12px' }}>
-                        <span style={{ 
-                           padding: '4px 8px', 
-                           borderRadius: '4px', 
-                           fontSize: '0.75rem',
-                           background: item.stock_disponible > 50 ? 'rgba(52, 211, 153, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                           color: item.stock_disponible > 50 ? '#34D399' : '#ef4444'
-                        }}>
-                           {item.stock_disponible > 50 ? 'SUFICIENTE' : 'BAJO'}
-                        </span>
-                     </td>
-                     <td style={{ padding: '12px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(item.ultima_actualizacion).toLocaleString()}</td>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+               <thead>
+                  <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-glass)' }}>
+                     <th style={{ padding: '12px' }}>Producto</th>
+                     <th style={{ padding: '12px' }}>Stock Global</th>
+                     <th style={{ padding: '12px' }}>Estado</th>
+                     <th style={{ padding: '12px' }}>Última Actualización</th>
                   </tr>
-                 ))
-               )}
-            </tbody>
-         </table>
+               </thead>
+               <tbody>
+                  {(ofertaDemanda?.inventario_actual || []).length === 0 ? (
+                     <tr><td colSpan="4" style={{ padding: '12px', textAlign: 'center', color: 'var(--text-muted)' }}>No hay inventario centralizado registrado.</td></tr>
+                  ) : (
+                    (ofertaDemanda?.inventario_actual || []).map((item, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid var(--border-glass)' }}>
+                         <td style={{ padding: '12px' }}>{item.productos?.nombre || 'Desconocido'}</td>
+                        <td style={{ padding: '12px', fontWeight: 'bold' }}>{item.stock_disponible} {item.productos?.unidad_medida || 'Unidades'}</td>
+                        <td style={{ padding: '12px' }}>
+                           <span style={{ 
+                              padding: '4px 8px', 
+                              borderRadius: '4px', 
+                              fontSize: '0.75rem',
+                              background: item.stock_disponible > 50 ? 'rgba(52, 211, 153, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                              color: item.stock_disponible > 50 ? '#34D399' : '#ef4444'
+                           }}>
+                              {item.stock_disponible > 50 ? 'SUFICIENTE' : 'BAJO'}
+                           </span>
+                        </td>
+                        <td style={{ padding: '12px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(item.ultima_actualizacion).toLocaleString()}</td>
+                     </tr>
+                    ))
+                  )}
+               </tbody>
+            </table>
+         </div>
       </div>
-
     </div>
   )
 }
