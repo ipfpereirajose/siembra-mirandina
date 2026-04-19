@@ -138,7 +138,8 @@ const AdminDashboard = ({ user }) => {
                </div>
             ))}
          </div>
-           {/* BLOQUE REQUISICIONES / SUBASTAS / PAGOS REGULARES */}
+      </div>
+      {/* BLOQUE REQUISICIONES / SUBASTAS / PAGOS REGULARES */}
       <div className="glass-panel" style={{ padding: '2rem', marginBottom: '3rem' }}>
          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3>Evaluador Central: Requisiciones y Pagos (B2B & Regular)</h3>
