@@ -15,9 +15,11 @@ const ProductCard = memo(({ product, onAdd }) => {
       <div className="product-image-container">
         {product.imagen_url ? (
           <img 
-            src={product.imagen_url} 
+            src={product.imagen_url.replace('.png', '.webp')} 
             alt={product.nombre} 
             className="product-image"
+            loading="lazy"
+            decoding="async"
             onError={(e) => {
               e.target.onerror = null;
               e.target.src = 'https://placehold.co/400x300?text=🌱';

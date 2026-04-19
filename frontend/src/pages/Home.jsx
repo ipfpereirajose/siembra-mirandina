@@ -25,11 +25,11 @@ const Home = ({ cart, setCart }) => {
   }, [cart])
 
   const heroSlides = [
-    { img: "/banners/suministros.png", title: "Suministros Agrícolas Mayoristas", desc: "Mejores precios netos para clientes B2B. Aprobación y verificación fiscal garantizada." },
-    { img: "/banners/maquinaria.png", title: "Catálogo de Maquinaria Pesada", desc: "Equipos de última generación para precisión 100% industrial, listos en bodega." },
-    { img: "/banners/tecnologia.png", title: "Ecosistema Tecnológico Agrotech", desc: "Monitoreo por drones y sensores de humedad para optimizar tu rendimiento al máximo." },
-    { img: "/banners/insumos.png", title: "Insumos y Consumibles B2B", desc: "Fertilizantes, herbicidas y semillas certificadas con despacho inmediato a todo el país." },
-    { img: "/banners/proteccion.png", title: "Protección y Estructuras", desc: "Mallas sombra y plásticos reflectantes para el control climático superior de tus cultivos." }
+    { img: "/banners/suministros.webp", title: "Suministros Agrícolas Mayoristas", desc: "Mejores precios netos para clientes B2B. Aprobación y verificación fiscal garantizada." },
+    { img: "/banners/maquinaria.webp", title: "Catálogo de Maquinaria Pesada", desc: "Equipos de última generación para precisión 100% industrial, listos en bodega." },
+    { img: "/banners/tecnologia.webp", title: "Ecosistema Tecnológico Agrotech", desc: "Monitoreo por drones y sensores de humedad para optimizar tu rendimiento al máximo." },
+    { img: "/banners/insumos.webp", title: "Insumos y Consumibles B2B", desc: "Fertilizantes, herbicidas y semillas certificadas con despacho inmediato a todo el país." },
+    { img: "/banners/proteccion.webp", title: "Protección y Estructuras", desc: "Mallas sombra y plásticos reflectantes para el control climático superior de tus cultivos." }
   ]
 
   useEffect(() => {

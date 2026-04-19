@@ -13,9 +13,9 @@ const Catalog = ({ cart, setCart }) => {
   const [currentSlide, setCurrentSlide] = useState(0)
 
   const promoSlides = [
-    { img: "https://loremflickr.com/1200/400/vegetables,farm?lock=301", title: "Cosecha Fresca de la Semana", desc: "Zanahorias y Papas directo de productores locales con precios referenciales BCV." },
-    { img: "https://loremflickr.com/1200/400/lettuce,agriculture?lock=302", title: "Verdes de Primera", desc: "Lechugas hidropónicas y hortalizas de hoja con la máxima frescura garantizada." },
-    { img: "https://loremflickr.com/1200/400/tomato,farm?lock=303", title: "Oferta de Tomate Perita", desc: "Calidad de exportación para tu negocio. Compra por cestas y ahorra." }
+    { img: "/banners/suministros.webp", title: "Cosecha Fresca de la Semana", desc: "Zanahorias y Papas directo de productores locales con precios referenciales BCV." },
+    { img: "/banners/tecnologia.webp", title: "Tecnología y Maquinaria", desc: "Equipamiento de punta para la máxima eficiencia en tu unidad de producción." },
+    { img: "/banners/insumos.webp", title: "Insumos y Fertilizantes", desc: "Todo lo que tu siembra necesita para un crecimiento sano y vigoroso." }
   ]
 
   useEffect(() => {
