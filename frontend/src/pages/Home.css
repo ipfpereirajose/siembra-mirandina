@@ -1,4 +1,4 @@
-/* Estilos específicos para la Home con soporte móvil */
+/* Estilos específicos para la Home con soporte móvil - Optimizado v2 */
 
 .hero-title {
   font-size: 3.5rem;
@@ -9,27 +9,56 @@
   font-size: 1.25rem;
 }
 
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 768px) {
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+    margin-top: 1.5rem;
+    gap: 0.75rem;
+  }
+  
   .hero-section {
-    padding: 2.5rem 1.5rem !important;
+    padding: 2.5rem 1.25rem !important;
     text-align: center;
-    border-radius: 0 !important; /* Aprovechar todo el ancho en movil */
+    border-radius: 0 !important;
+    min-height: 450px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .hero-title {
-    font-size: 1.8rem !important;
+    font-size: 1.6rem !important;
     margin-bottom: 0.8rem;
+    line-height: 1.2;
   }
 
   .hero-desc {
-    font-size: 1rem !important;
+    font-size: 0.95rem !important;
     margin: 0 auto;
+    opacity: 0.9;
   }
 
   .hero-section .btn-primary, 
   .hero-section .btn-outline {
-    width: 100%;
-    margin-bottom: 0.5rem;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .hero-section > div:nth-child(2) {
+    padding: 1.25rem !important;
+    background: rgba(0,0,0,0.3) !important;
+    backdrop-filter: blur(4px);
+    border-radius: 12px;
   }
 }
 
@@ -40,11 +69,13 @@
 @media (max-width: 768px) {
   .catalog-header {
     flex-direction: column;
-    align-items: flex-start !important;
+    align-items: center !important;
+    text-align: center;
+    gap: 1rem;
   }
   
   .catalog-header h2 {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   .glass-input {

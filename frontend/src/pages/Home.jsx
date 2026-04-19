@@ -119,17 +119,22 @@ const Home = ({ cart, setCart }) => {
           {heroSlides[currentSlide].desc}
         </p>
         {/* Botonera de Acción Primaria */}
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-          <button className="btn-primary" style={{ padding: '15px 30px', fontSize: '1.1rem' }} onClick={() => navigate('/register')}>
-            Abrir Cuenta Empresarial Hoy
-          </button>
-          
-          <button 
-             className="btn-outline" 
-             onClick={() => navigate('/cliente')} 
-             style={{ fontSize: '1.1rem', padding: '15px 30px', backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.5)', boxShadow: '0 4px 15px var(--arco-glow)' }}
+        <div className="hero-actions">
+           <button 
+             className="btn-primary" 
+             style={{ fontSize: '1.1rem', padding: '14px 32px' }}
+             onClick={() => navigate('/register')}
            >
-             🚛 Generar Requisición Especial (B2B)
+             Abrir Cuenta Empresarial Hoy
+           </button>
+           <button 
+             className="btn-outline" 
+             style={{ border: '2px solid rgba(255,255,255,0.8)', color: '#fff', fontSize: '1.1rem', padding: '14px 32px', backdropFilter: 'blur(8px)' }}
+             onClick={() => navigate('/catalog')}
+           >
+             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🚢 Generar Requisición Especial (B2B)
+             </span>
            </button>
         </div>
 
