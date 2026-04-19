@@ -132,3 +132,8 @@ class NotificacionResponse(BaseModel):
     mensaje: str
     leido: bool
     created_at: datetime
+
+class PagoReferencia(BaseModel):
+    pedido_id: str
+    referencia: str
+

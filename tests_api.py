@@ -16,7 +16,7 @@ def run_test():
     email = f"empresa_{uuid.uuid4().hex[:6]}@arcob2b.com"
     user_res = supabase.auth.admin.create_user({"email": email, "password": "securepassword123", "email_confirm": True})
     usuario_id = user_res.user.id
-    print(f"✅ Usuario B2B Registrado: {email} (ID: {usuario_id})")
+    print(f"[OK] Usuario B2B Registrado: {email} (ID: {usuario_id})")
         
     # 2. Crear Empresa
     empresa_data = supabase.table('empresas').insert({
@@ -25,7 +25,7 @@ def run_test():
         "limite_credito_usd": 50000.00
     }).execute()
     empresa_id = empresa_data.data[0]['id']
-    print(f"✅ Organización B2B Creada: {empresa_id}")
+    print(f"[OK] Organización B2B Creada: {empresa_id}")
     
     # 3. Vincular Usuario <-> Empresa en 'perfiles'
     supabase.table('perfiles').insert({
@@ -48,7 +48,7 @@ def run_test():
     # 5. Inventario
     initial_stock = 500
     supabase.table('inventario').insert({"producto_id": prod_id, "stock_disponible": initial_stock}).execute()
-    print(f"✅ Producto '{prod_data.data[0]['nombre']}' creado con {initial_stock} sacos en sistema.\n")
+    print(f"[OK] Producto '{prod_data.data[0]['nombre']}' creado con {initial_stock} sacos en sistema.\n")
     
     
     print("[2] PRUEBAS DE ENDPOINTS (API FASTAPI)")
@@ -86,11 +86,11 @@ def run_test():
     res_checkout = requests.post(f"{API_URL}/pedidos/checkout", json=compra_payload, headers=headers)
     if res_checkout.status_code == 200:
         orden = res_checkout.json()
-        print(f"   ✅ ¡ORDEN APROBADA! Factura No: {orden['id']}")
+        print(f"   [OK] ¡ORDEN APROBADA! Factura No: {orden['id']}")
         print(f"      Estado: {orden['estado']}")
         print(f"      Total Cobrado: ${orden['total_usd']}")
     else:
-        print(f"   ❌ ERROR EN CHECKOUT: {res_checkout.text}")
+        print(f"   [ERROR] ERROR EN CHECKOUT: {res_checkout.text}")
         return
         
     # C. Verificación de Transaccionalidad de Inventario
@@ -102,9 +102,9 @@ def run_test():
                 print(f"   Stock Anterior: {initial_stock}")
                 print(f"   Stock Actualizado: {p.get('inventario', {}).get('stock_disponible', 'N/A')} (Debe ser {initial_stock - 30})")
                 if p["inventario"]["stock_disponible"] == initial_stock - 30:
-                    print("   ✅ MATEMÁTICAS PERFECTAS. Restado exitosamente.")
+                    print("   [OK] MATEMÁTICAS PERFECTAS. Restado exitosamente.")
                 else:
-                    print("   ❌ FALLO EN CÁLCULO DE STOCK.")
+                    print("   [ERROR] FALLO EN CÁLCULO DE STOCK.")
     print("\n==========================================================")
     print(" TODAS LAS PRUEBAS RESULTARON O.K. SISTEMA ESTABLE.")
     print("==========================================================")
@@ -113,4 +113,4 @@ if __name__ == "__main__":
     try:
         run_test()
     except requests.exceptions.ConnectionError:
-        print("❌ Error: No se puede conectar a FastAPI. Asegúrate de ejecutar uvicorn primero.")
+        print("[ERROR] Error: No se puede conectar a FastAPI. Asegúrate de ejecutar uvicorn primero.")

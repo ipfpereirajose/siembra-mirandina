@@ -24,9 +24,11 @@ const Home = ({ cart, setCart }) => {
   }, [cart])
 
   const heroSlides = [
-    { img: "https://loremflickr.com/1200/400/farming?lock=101", title: "Suministros Agrícolas Mayoristas", desc: "Mejores precios netos para clientes B2B. Aprobación y verificación fiscal garantizada." },
-    { img: "https://loremflickr.com/1200/400/tractor?lock=102", title: "Catálogo de Maquinaria", desc: "Equipos de última generación para precisión 100% industrial, listos en bodega." },
-    { img: "https://loremflickr.com/1200/400/greenhouse,plants?lock=103", title: "Protección y Sustratos", desc: "Coberturas y control climático superior para todo tipo de cultivos especializados." }
+    { img: "/banners/suministros.png", title: "Suministros Agrícolas Mayoristas", desc: "Mejores precios netos para clientes B2B. Aprobación y verificación fiscal garantizada." },
+    { img: "/banners/maquinaria.png", title: "Catálogo de Maquinaria Pesada", desc: "Equipos de última generación para precisión 100% industrial, listos en bodega." },
+    { img: "/banners/tecnologia.png", title: "Ecosistema Tecnológico Agrotech", desc: "Monitoreo por drones y sensores de humedad para optimizar tu rendimiento al máximo." },
+    { img: "/banners/insumos.png", title: "Insumos y Consumibles B2B", desc: "Fertilizantes, herbicidas y semillas certificadas con despacho inmediato a todo el país." },
+    { img: "/banners/proteccion.png", title: "Protección y Estructuras", desc: "Mallas sombra y plásticos reflectantes para el control climático superior de tus cultivos." }
   ]
 
   useEffect(() => {

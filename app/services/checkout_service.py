@@ -2,6 +2,8 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from app.db.supabase_client import get_supabase
 from app.models.schemas import CheckoutRequest
+from app.services.notificaciones_service import notificar_cambio_estado_pedido, notificar_admin
+
 
 def procesar_checkout(usuario_id: str, empresa_id: str, payload: CheckoutRequest):
     """
@@ -59,8 +61,7 @@ def procesar_checkout(usuario_id: str, empresa_id: str, payload: CheckoutRequest
             
         # 1. Crear el Pedido Master
         orden_data = {
-            "empresa_id": empresa_id,
-            "usuario_id": usuario_id,
+            "cliente_id": usuario_id,
             "estado": "PENDIENTE",
             "metodo_pago": payload.metodo_pago,
             "total_usd": total_usd
@@ -70,17 +71,15 @@ def procesar_checkout(usuario_id: str, empresa_id: str, payload: CheckoutRequest
         orden_creada = orden_res.data[0]
         pedido_id = orden_creada['id']
         
-        # 2. Insertar Líneas
+        # 2 & 3. Deducir Inventario por Productor (FIFO) y Preparar Lineas
+        alertas_stock = []
         for l_proc in lineas_procesadas:
             l_proc["pedido_id"] = pedido_id
-        
-        supabase.table('lineas_pedido').insert(lineas_procesadas).execute()
-        
-        # 3. Deducir Inventario por Productor (FIFO) y Calcular Alertas
-        alertas_stock = []
-        for pd in productos_a_descontar:
-            prod_id = pd["producto_id"]
-            restante_a_descontar = pd["cantidad"]
+            prod_id = l_proc["producto_id"]
+            restante_a_descontar = l_proc["cantidad"]
+            
+            # Buscar dict original en productos_a_descontar si fuera distinto, pero l_proc tiene lo que necesitamos
+            trazabilidad = []
             
             # Traer ofertas de productores para este producto ordendas por antigüedad (FIFO)
             ofertas_res = supabase.table('produccion_productor').select('*').eq('producto_id', prod_id).eq('esta_en_venta', True).gt('cantidad_en_venta', 0).order('created_at', desc=False).execute()
@@ -94,32 +93,91 @@ def procesar_checkout(usuario_id: str, empresa_id: str, payload: CheckoutRequest
                 
                 if disp_venta <= restante_a_descontar:
                     # Se consume toda esta oferta
+                    tomado = disp_venta
                     restante_a_descontar -= disp_venta
                     # Actualizar a 0 y sacar de venta
                     supabase.table('produccion_productor').update({
                         "cantidad_en_venta": 0,
                         "esta_en_venta": False,
-                        "cantidad_disponible": disp_total - disp_venta
+                        "cantidad_disponible": disp_total - tomado
                     }).eq('id', oferta['id']).execute()
+                    
+                    trazabilidad.append({"oferta_id": oferta['id'], "productor_id": oferta['productor_id'], "cantidad_tomada": tomado})
                 else:
                     # Se consume parcialmente esta oferta
+                    tomado = restante_a_descontar
                     supabase.table('produccion_productor').update({
-                        "cantidad_en_venta": disp_venta - restante_a_descontar,
-                        "cantidad_disponible": disp_total - restante_a_descontar
+                        "cantidad_en_venta": disp_venta - tomado,
+                        "cantidad_disponible": disp_total - tomado
                     }).eq('id', oferta['id']).execute()
+                    
+                    trazabilidad.append({"oferta_id": oferta['id'], "productor_id": oferta['productor_id'], "cantidad_tomada": tomado})
                     restante_a_descontar = 0
+                    
+            l_proc["siembra_trazabilidad"] = trazabilidad
+
+        # 4. Insertar Lineas con Integridad de Trazabilidad
+        supabase.table('lineas_pedido').insert(lineas_procesadas).execute()
             
-            # El trigger de la DB actualiza automáticamente el 'inventario' global
-            
+        # El trigger de la DB actualiza automáticamente el 'inventario' global
+        
+        for pd in productos_a_descontar:
             if pd["nuevo_stock"] <= pd["umbral_alerta"]:
                 alertas_stock.append({
-                    "producto_id": prod_id,
+                    "producto_id": pd["producto_id"],
                     "stock_actual": pd["nuevo_stock"],
                     "umbral": pd["umbral_alerta"]
                 })
             
+        # Notificar al cliente sobre su nueva orden regular
+        notificar_cambio_estado_pedido(usuario_id, pedido_id, "PENDIENTE")
+        
+        # Notificar al Administrador sobre nueva venta
+        notificar_admin(
+            "🛒 Nueva Venta Regular",
+            f"Un cliente ha realizado un pedido por {total_usd} USD."
+        )
+        
         return orden_creada, alertas_stock
+
         
     except Exception as e:
         # Rebotar la excepción a FastAPI si falla
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Transacción abortada: {str(e)}")
+
+def cancelar_pedido(pedido_id: str):
+    """
+    Revierte una orden (Cancelación) usando la trazabilidad almacenada.
+    Devuelve las cantidades retenidas a sus productores originales.
+    """
+    supabase = get_supabase()
+    try:
+        # 1. Traer lineas con trazabilidad
+        lineas_res = supabase.table('lineas_pedido').select('*').eq('pedido_id', pedido_id).execute()
+        
+        for linea in lineas_res.data:
+            trazabilidad = linea.get("siembra_trazabilidad") or []
+            for t in trazabilidad:
+                oferta_id = t.get("oferta_id") # Usamos .get para tolerar viejos formatos
+                if not oferta_id: continue
+                tomado = float(t.get("cantidad_tomada", 0))
+                
+                # Obtener estado actual de la oferta
+                of_res = supabase.table('produccion_productor').select('*').eq('id', oferta_id).single().execute()
+                if of_res.data:
+                    of_actual = of_res.data
+                    nueva_venta = float(of_actual["cantidad_en_venta"]) + tomado
+                    nueva_disp = float(of_actual["cantidad_disponible"]) + tomado
+                    
+                    supabase.table('produccion_productor').update({
+                        "cantidad_en_venta": nueva_venta,
+                        "cantidad_disponible": nueva_disp,
+                        "esta_en_venta": True # Si estaba apagado, al recibir stock vuelve a vender
+                    }).eq('id', oferta_id).execute()
+        
+        # 2. Marcar pedido como cancelado
+        supabase.table('pedidos').update({"estado": "CANCELADO"}).eq('id', pedido_id).execute()
+        
+        return True
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al cancelar pedido: {str(e)}")

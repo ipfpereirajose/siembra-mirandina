@@ -16,15 +16,21 @@ const Profile = ({ user }) => {
     fetch(`${API}/auth/me`, { headers })
       .then(res => res.json())
       .then(data => {
+        if (!data) return;
         setProfile(data);
         setFormData({
-          nombre_completo: data.nombre_completo,
+          nombre_completo: data.nombre_completo || '',
           telefono: data.telefono || '',
           direccion_fiscal: data.empresas?.direccion_fiscal || '',
           password: ''
         });
         setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error cargando perfil", err);
+        setLoading(false);
       });
+
   }, []);
 
   const handleUpdate = async (e) => {

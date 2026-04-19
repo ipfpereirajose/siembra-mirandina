@@ -49,12 +49,23 @@ def sembrar_catagolo():
     print("Iniciando la siembra en Base de Datos de nuevos productos...")
     c = 1
     for cat_name, productos in data_catalogo.items():
-        # Insertar Categoría
-        cat_res = supabase.table('categorias').insert({"nombre": cat_name, "descripcion": f"Catálogo B2B para {cat_name}"}).execute()
-        cat_id = cat_res.data[0]['id']
+        # Insertar Categoría o Recuperar si existe
+        try:
+            cat_res = supabase.table('categorias').insert({"nombre": cat_name, "descripcion": f"Catalogo B2B para {cat_name}"}).execute()
+            cat_id = cat_res.data[0]['id']
+        except Exception:
+            # Si ya existe, buscar su ID
+            cat_res = supabase.table('categorias').select('id').eq('nombre', cat_name).limit(1).execute()
+            cat_id = cat_res.data[0]['id']
         
         for p in productos:
             sku_val = f"ARCO-{c:04d}"
+            # Evitar duplicados de productos si ya se corrió parcialmente
+            check_prod = supabase.table('productos').select('id').eq('sku', sku_val).limit(1).execute()
+            if check_prod.data:
+                print(f"Saltando: {sku_val} (Ya existe)")
+                c += 1
+                continue
             # Imagenes dinámicas de Unsplash. (Usando loremflickr que provee imágenes gratuitas dummy orientadas)
             # Parametros para variar imagen
             img_url = f"https://loremflickr.com/400/300/{p['kw']}?lock={c}"
@@ -77,7 +88,7 @@ def sembrar_catagolo():
                 "umbral_alerta": 10
             }).execute()
             c += 1
-            print(f"✅ Agregado: {sku_val} - {p['nombre']}")
+            print(f"OK Agregado: {sku_val} - {p['nombre']}")
 
 if __name__ == "__main__":
     sembrar_catagolo()

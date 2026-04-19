@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './Catalog.css'
+import PaymentInstructions from '../components/PaymentInstructions'
+import { useBCV } from '../hooks/useBCV'
+
 
 const CustomerDashboard = ({ user }) => {
   const [historial, setHistorial] = useState([])
@@ -18,8 +21,10 @@ const CustomerDashboard = ({ user }) => {
   const [ordenActivaPago, setOrdenActivaPago] = useState(null)
   const [reciboBase64, setReciboBase64] = useState('')
 
+  const { aBs } = useBCV()
   const API = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001'
   const isB2B = user?.rol === 'CLIENTE_EMPRESA'
+
 
   useEffect(() => {
     cargarDatos()
@@ -143,6 +148,48 @@ const CustomerDashboard = ({ user }) => {
     if(st === 'PAGO_POR_VERIFICAR') return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', fontSize: '0.8rem'}}>⏳ Recibo Anexado (Auditoría)</span>
     if(st === 'PROCESANDO' || st === 'SUBASTA_ABIERTA' || st === 'APROBADO' || st === 'PENDIENTE_COTIZACION') return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', fontSize: '0.8rem'}}>🔵 Negociando/Evaluando</span>
     return <span style={{padding: '4px 8px', borderRadius: '12px', background: 'rgba(251, 191, 36, 0.1)', color: '#f59e0b', fontSize: '0.8rem'}}>🟡 Pendiente Base</span>
+  }
+
+  const handleCancelarPedido = async (pedido_id) => {
+    if (!window.confirm("¿Seguro que deseas cancelar este pedido? Se liberará la mercancía retenida.")) return;
+    setLoading(true)
+    try {
+      const res = await fetch(`${API}/pedidos/${pedido_id}/cancelar`, {
+        method: 'POST',
+        headers: { 'x-user-id': user.id, 'x-empresa-id': user.empresa_id || '' }
+      })
+      if (res.ok) {
+        alert("Pedido cancelado y stock retornado exitosamente.")
+        cargarDatos()
+      } else {
+        alert("Error al cancelar.")
+      }
+    } catch(e) {
+      console.error(e)
+    }
+    setLoading(false)
+  }
+
+  const handleReportarPago = async (pedido_id) => {
+    const ref = window.prompt("Por favor, introduzca el Número de Referencia Bancaria (Ej: 00452312):")
+    if (!ref) return;
+    setLoading(true)
+    try {
+      const res = await fetch(`${API}/pagos/reportar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': user.id, 'x-empresa-id': user.empresa_id || '' },
+        body: JSON.stringify({ pedido_id, referencia: ref })
+      })
+      if(res.ok){
+        alert("Pago enviado a verificación. El administrador lo revisará brevemente.")
+        cargarDatos()
+      } else {
+        alert("Error contactando al servidor de reportes.")
+      }
+    } catch(e) {
+      console.error(e)
+    }
+    setLoading(false)
   }
 
   return (
@@ -345,7 +392,30 @@ const CustomerDashboard = ({ user }) => {
                                  <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>Monto Neto (USD)</div>
                               </div>
                            </div>
+                           
+                           {/* Botonera Transaccional Adicional para Pedidos Normales */}
+                           {ped.estado === 'PENDIENTE' && (
+                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end', marginLeft: 'auto' }}>
+                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button className="btn-outline" style={{ padding: '6px 12px', fontSize: '0.9rem' }} onClick={() => setOrdenActivaPago(ordenActivaPago === ped.id ? null : ped.id)}>📋 Ver Datos de Pago</button>
+                                    <button className="btn-primary" style={{ background: '#10b981', padding: '6px 12px', fontSize: '0.9rem' }} onClick={() => handleReportarPago(ped.id)}>💵 Reportar Pago</button>
+                                 </div>
+                                 <button className="btn-outline" style={{ borderColor: '#ef4444', color: '#ef4444', padding: '6px 12px', fontSize: '0.9rem' }} onClick={() => handleCancelarPedido(ped.id)}>❌ Cancelar Compra</button>
+                             </div>
+                           )}
+                           
+                           {/* Instrucciones Inline */}
+                           {ordenActivaPago === ped.id && ped.estado === 'PENDIENTE' && (
+                             <div className="fade-in" style={{ width: '100%', marginTop: '1rem' }}>
+                                <PaymentInstructions 
+                                  method={ped.metodo_pago} 
+                                  amountUsd={ped.total_usd?.toFixed(2)} 
+                                  amountBs={aBs(ped.total_usd)} 
+                                />
+                             </div>
+                           )}
                         </div>
+
                      ))}
                    </>
                 )}

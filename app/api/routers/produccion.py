@@ -151,5 +151,12 @@ def eliminar_declaracion(declaracion_id: str, auth_ctx: dict = Depends(get_user_
 @router_notificaciones.get("/", response_model=List[NotificacionResponse])
 def listar_notificaciones(auth_ctx: dict = Depends(get_user_context)):
     supabase = get_supabase()
-    res = supabase.table('notificaciones').select('*').eq('usuario_id', str(auth_ctx["usuario_id"])).order('created_at', desc=True).limit(5).execute()
+    res = supabase.table('notificaciones').select('*').eq('usuario_id', str(auth_ctx["usuario_id"])).order('created_at', desc=True).limit(20).execute()
     return res.data
+
+@router_notificaciones.put("/{notif_id}/leer")
+def marcar_como_leida(notif_id: str, auth_ctx: dict = Depends(get_user_context)):
+    supabase = get_supabase()
+    res = supabase.table('notificaciones').update({"leido": True}).eq('id', notif_id).eq('usuario_id', str(auth_ctx["usuario_id"])).execute()
+    return {"mensaje": "Notificación marcada como leída", "data": res.data}
+

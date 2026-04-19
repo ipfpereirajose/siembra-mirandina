@@ -141,10 +141,41 @@ const Catalog = ({ cart, setCart }) => {
         {filteredProductos.map(p => (
           <ProductCard key={p.id} product={p} onAdd={handleAddToCart} />
         ))}
+        
+        {/* GANCHO VISUAL: Tarjeta de Solicitud Especial */}
+        <div className="glass-card fade-in" style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            textAlign: 'center', 
+            padding: '2rem',
+            border: '2px dashed var(--border-glass)',
+            background: 'rgba(255,255,255,0.03)',
+            cursor: 'pointer',
+            minHeight: '400px'
+        }} onClick={() => navigate('/cliente')}>
+           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📦</div>
+           <h3 style={{ fontSize: '1.4rem', color: 'var(--miranda-primary)' }}>¿No encuentras lo que buscas?</h3>
+           <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+             Si necesitas un rubro específico al mayor que no está en el catálogo, podemos buscarlo entre nuestros productores.
+           </p>
+           <button className="btn-outline" style={{ borderStyle: 'dashed' }}>
+             Crear Requisición Especial
+           </button>
+        </div>
+
         {filteredProductos.length === 0 && (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem' }}>
-             <p className="text-muted">No se encontraron productos que coincidan con tu búsqueda.</p>
-             <button className="btn-outline" style={{ marginTop: '1rem' }} onClick={() => setSearchTerm('')}>Ver todo el catálogo</button>
+          <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '5rem 2rem' }}>
+             <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🚜</div>
+             <h2 style={{ marginBottom: '1rem' }}>¡Vaya! No encontramos ese rubro</h2>
+             <p className="text-muted" style={{ fontSize: '1.1rem' }}>
+               Actualmente ningún productor ha declarado disponibilidad de ese producto.
+             </p>
+             <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <button className="btn-primary" onClick={() => navigate('/cliente')}>Abrir Requisición Especial</button>
+                <button className="btn-outline" onClick={() => setSearchTerm('')}>Ver Todo el Catálogo</button>
+             </div>
           </div>
         )}
       </div>

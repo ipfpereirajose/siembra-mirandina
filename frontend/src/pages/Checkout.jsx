@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../components/ProductCard.css'
 import { useBCV } from '../hooks/useBCV'
+import PaymentInstructions from '../components/PaymentInstructions'
+
 
 const Checkout = ({ cart, setCart, user }) => {
   const navigate = useNavigate()
@@ -22,6 +24,8 @@ const Checkout = ({ cart, setCart, user }) => {
       </div>
     )
   }
+
+  const [finalTotal, setFinalTotal] = useState(0)
 
   const handleProcessPayment = async (e) => {
     e.preventDefault()
@@ -48,6 +52,7 @@ const Checkout = ({ cart, setCart, user }) => {
       
       const data = await res.json()
       if(res.ok) {
+        setFinalTotal(total)
         setSuccessId(data.id)
         setCart([]) // Vaciar carrito tras la compra exitosa
       } else {
@@ -62,16 +67,27 @@ const Checkout = ({ cart, setCart, user }) => {
 
   if (successId) {
     return (
-      <div className="glass-panel fade-in" style={{ padding: '4rem', textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
+      <div className="glass-panel fade-in" style={{ padding: '4rem', textAlign: 'center', maxWidth: '700px', margin: '0 auto' }}>
         <div style={{ fontSize: '5rem', marginBottom: '1rem' }}>🎉</div>
-        <h2 style={{ color: 'var(--miranda-primary)' }}>¡Pago Procesado Exitosamente!</h2>
-        <p className="text-muted" style={{ fontSize: '1.1rem', marginBottom: '2rem' }}>
-          Tu orden <strong>#{successId.substring(0,8).toUpperCase()}</strong> ha sido registrada en nuestros servidores y el inventario ha sido asegurado para ti.
+        <h2 style={{ color: 'var(--miranda-primary)' }}>¡Órden Generada con Éxito!</h2>
+        <p className="text-muted" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
+          Tu pedido <strong>#{successId.substring(0,8).toUpperCase()}</strong> ha sido reservado.
         </p>
-        <button className="btn-outline" onClick={() => navigate('/cliente')}>Ir a mi Historial de Pedidos</button>
+
+        <PaymentInstructions 
+          method={paymentMethod} 
+          amountUsd={finalTotal.toFixed(2)} 
+          amountBs={aBs(finalTotal)} 
+        />
+
+        <div style={{ marginTop: '2.5rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+          <button className="btn-outline" onClick={() => navigate('/cliente')}>Ver Historial y Reportar Pago</button>
+          <button className="btn-primary" onClick={() => navigate('/b2b')}>Seguir Comprando</button>
+        </div>
       </div>
     )
   }
+
 
   return (
     <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr)', gap: '3rem', alignItems: 'start' }}>
@@ -83,19 +99,24 @@ const Checkout = ({ cart, setCart, user }) => {
           <h3 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Método de Facturación</h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: '1px solid var(--border-glass)', borderRadius: '8px', cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: '1px solid var(--border-glass)', borderRadius: '8px', cursor: 'pointer', background: paymentMethod === 'TRANSFERENCIA_BANCARIA' ? 'rgba(52, 211, 153, 0.05)' : 'transparent' }}>
               <input type="radio" name="payment" value="TRANSFERENCIA_BANCARIA" checked={paymentMethod === 'TRANSFERENCIA_BANCARIA'} onChange={e => setPaymentMethod(e.target.value)} />
-              <span>🏦 Transferencia Bancaria (Zelle / Banesco Panamá)</span>
+              <span>🏦 Transferencia Bancaria Nacional</span>
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: '1px solid var(--border-glass)', borderRadius: '8px', cursor: 'pointer' }}>
-              <input type="radio" name="payment" value="TARJETA_CREDITO" checked={paymentMethod === 'TARJETA_CREDITO'} onChange={e => setPaymentMethod(e.target.value)} />
-              <span>💳 Tarjeta de Crédito (Stripe)</span>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: '1px solid var(--border-glass)', borderRadius: '8px', cursor: 'pointer', background: paymentMethod === 'PAGO_MOVIL' ? 'rgba(52, 211, 153, 0.05)' : 'transparent' }}>
+              <input type="radio" name="payment" value="PAGO_MOVIL" checked={paymentMethod === 'PAGO_MOVIL'} onChange={e => setPaymentMethod(e.target.value)} />
+              <span>📱 Pago Móvil (Instante)</span>
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: '1px solid var(--border-glass)', borderRadius: '8px', cursor: 'pointer' }}>
-              <input type="radio" name="payment" value="CREDITO_NET_30" checked={paymentMethod === 'CREDITO_NET_30'} onChange={e => setPaymentMethod(e.target.value)} />
-              <span>📋 Crédito a 30 Días (Solo Clientes VIP)</span>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: '1px solid var(--border-glass)', borderRadius: '8px', cursor: 'pointer', background: paymentMethod === 'ZELLE' ? 'rgba(52, 211, 153, 0.05)' : 'transparent' }}>
+              <input type="radio" name="payment" value="ZELLE" checked={paymentMethod === 'ZELLE'} onChange={e => setPaymentMethod(e.target.value)} />
+              <span>💵 Zelle (USD)</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: '1px solid var(--border-glass)', borderRadius: '8px', cursor: 'pointer', background: paymentMethod === 'PAYPAL' ? 'rgba(52, 211, 153, 0.05)' : 'transparent' }}>
+              <input type="radio" name="payment" value="PAYPAL" checked={paymentMethod === 'PAYPAL'} onChange={e => setPaymentMethod(e.target.value)} />
+              <span>💳 PayPal</span>
             </label>
           </div>
+
 
           <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', padding: '15px', fontSize: '1.2rem', background: 'var(--arco-primary)' }}>
             {loading ? 'Validando con el Banco...' : `Pagar $${total.toFixed(2)} USD y Procesar`}

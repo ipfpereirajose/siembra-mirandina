@@ -1,13 +1,16 @@
-from fastapi import APIRouter, HTTPException, Depends, Header
 from fastapi import APIRouter, HTTPException, Depends, Header, BackgroundTasks
 from typing import List, Optional
 from app.db.supabase_client import get_supabase
-from app.models.schemas import ProductoResponse, CheckoutRequest, PedidoResponse
-from app.services.checkout_service import procesar_checkout
+from app.models.schemas import ProductoResponse, CheckoutRequest, PedidoResponse, PagoReferencia
+from app.services.checkout_service import procesar_checkout, cancelar_pedido
 from app.services import n8n_integration
+from app.services.notificaciones_service import notificar_admin
+from pydantic import BaseModel
 
 router_productos = APIRouter(prefix="/productos", tags=["Catálogo Agrícola"])
 router_pedidos = APIRouter(prefix="/pedidos", tags=["Ventas y Checkout B2B"])
+router_pagos = APIRouter(prefix="/pagos", tags=["Gestión de Pagos"])
+
 
 def get_user_context(
     x_user_id: str = Header(default="00000000-0000-0000-0000-000000000000"),
@@ -84,3 +87,26 @@ def obtener_historial_compras(auth_ctx: dict = Depends(get_user_context)):
         historico.append(p)
         
     return historico
+
+@router_pedidos.post("/{pedido_id}/cancelar")
+def abortar_pedido(pedido_id: str, auth_ctx: dict = Depends(get_user_context)):
+    cancelar_pedido(pedido_id)
+    return {"mensaje": "Pedido cancelado. Inventario regresado a los productores."}
+
+@router_pagos.post("/reportar")
+def reportar_pago(payload: PagoReferencia, auth_ctx: dict = Depends(get_user_context)):
+    supabase = get_supabase()
+    supabase.table('pedidos').update({
+        "estado": "ESPERA_PAGO",
+        "codigo_referencia": payload.referencia
+    }).eq("id", payload.pedido_id).execute()
+    
+    # Notificar al Administrador para revisión
+    notificar_admin(
+        "💳 Pago por Recibido",
+        f"Se ha reportado un nuevo pago de un cliente. Referencia: {payload.referencia}"
+    )
+    
+    return {"mensaje": "Pago reportado. Administrador verificando."}
+
+

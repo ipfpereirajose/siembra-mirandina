@@ -27,12 +27,26 @@ def login_cuenta(payload: LoginRequest):
         user_id = auth_res.user.id
         
         # 2. Obtener Perfil y Empresa
-        res_perfil = supabase.table('perfiles').select('*, empresas(*)').eq('id', user_id).single().execute()
+        # Evitamos .single() para que no lance excepción si no existe el registro en la tabla de perfiles
+        res_perfil = supabase.table('perfiles').select('*, empresas(*)').eq('id', user_id).limit(1).execute()
         
-        if not res_perfil.data:
-            raise HTTPException(status_code=404, detail="Perfil no encontrado.")
+        perfil = res_perfil.data[0] if res_perfil.data else None
+        
+        # Si el usuario no tiene perfil (huérfano en desarrollo), devolvemos datos básicos
+        if not perfil:
+            return {
+                "user": {
+                    "id": user_id,
+                    "rol": auth_res.user.user_metadata.get("rol", "CLIENTE_NATURAL"),
+                    "empresa_id": None,
+                    "nombre_completo": auth_res.user.user_metadata.get("nombre", "Usuario Invitado")
+                },
+                "session": {
+                    "access_token": auth_res.session.access_token,
+                    "expires_in": auth_res.session.expires_in
+                }
+            }
             
-        perfil = res_perfil.data
         return {
             "user": {
                 "id": user_id,
@@ -141,8 +155,13 @@ class TicketRequest(BaseModel):
 @router_auth.get("/me")
 def obtener_perfil(auth_ctx: dict = Depends(get_user_context)):
     supabase = get_supabase()
-    res_perfil = supabase.table('perfiles').select('*, empresas(*)').eq('id', str(auth_ctx["usuario_id"])).single().execute()
-    return res_perfil.data
+    res_perfil = supabase.table('perfiles').select('*, empresas(*)').eq('id', str(auth_ctx["usuario_id"])).limit(1).execute()
+    
+    if not res_perfil.data:
+        # Retornar una estructura vacía pero coherente para que el frontend no rompa
+        return {"nombre_completo": "Usuario sin Perfil Fiscal", "telefono": "", "empresas": {"nit_rfc": "N/A", "direccion_fiscal": "No registrada"}}
+
+    return res_perfil.data[0]
 
 @router_auth.post("/update-profile")
 def actualizar_perfil(payload: dict, auth_ctx: dict = Depends(get_user_context)):

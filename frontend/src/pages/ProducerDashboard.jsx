@@ -43,12 +43,12 @@ const ProducerDashboard = ({ user }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetch(`${API_URL}/produccion/declarar`, {
+      const res = await fetch(`${API_URL}/produccion/`, {
         method: 'POST',
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'X-User-Id': user.id,
-            'X-Empresa-Id': user.empresa_id
+            'X-Empresa-Id': user.empresa_id || ''
         },
         body: JSON.stringify({
           producto_id: selection.producto_id === 'OTRO' ? null : selection.producto_id,
@@ -60,6 +60,12 @@ const ProducerDashboard = ({ user }) => {
           precio_propuesto_usd: selection.precio ? parseFloat(selection.precio) : null
         })
       });
+      if (!res.ok) {
+         const err = await res.json();
+         alert("ERROR: " + (err.detail || JSON.stringify(err)));
+      } else {
+         alert("Registrado en tu Finca. Recuerda presionar el botón 'Activar' en la tabla para mandarlo al catálogo.")
+      }
       cargarDeclaraciones();
       setSelection({ ...selection, cantidad: '', precio: '', nuevo_nombre: '', producto_id: '' });
     } catch (err) {
