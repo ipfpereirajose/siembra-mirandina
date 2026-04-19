@@ -8,6 +8,7 @@ const Catalog = ({ cart, setCart }) => {
   const [productos, setProductos] = useState([])
   const [filteredProductos, setFilteredProductos] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [hideOutOfStock, setHideOutOfStock] = useState(false)
   const [loading, setLoading] = useState(true)
   const [currentSlide, setCurrentSlide] = useState(0)
 
@@ -39,12 +40,17 @@ const Catalog = ({ cart, setCart }) => {
   }, [])
 
   useEffect(() => {
-    const results = productos.filter(p => 
+    let results = productos.filter(p => 
       p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
     )
+
+    if (hideOutOfStock) {
+      results = results.filter(p => (p.inventario?.stock_disponible || 0) > 0)
+    }
+
     setFilteredProductos(results)
-  }, [searchTerm, productos])
+  }, [searchTerm, productos, hideOutOfStock])
 
   const handleAddToCart = (product, quantity) => {
     const existingIdx = cart.findIndex(item => item.product.id === product.id)
@@ -78,17 +84,40 @@ const Catalog = ({ cart, setCart }) => {
         </div>
       </div>
 
-      {/* Buscador de Productos */}
-      <div className="glass-panel" style={{ padding: '1rem 2rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-         <span style={{ fontSize: '1.2rem' }}>🔍</span>
-         <input 
-           type="text" 
-           className="glass-input" 
-           placeholder="Buscar rubros (Tomate, Papa, Cebolla...)" 
-           value={searchTerm}
-           onChange={e => setSearchTerm(e.target.value)}
-           style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '1.1rem' }}
-         />
+      <div className="glass-panel" style={{ padding: '1rem 2rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+            <span style={{ fontSize: '1.2rem' }}>🔍</span>
+            <input 
+              type="text" 
+              className="glass-input" 
+              placeholder="Buscar rubros (Tomate, Papa, Cebolla...)" 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '1.1rem' }}
+            />
+         </div>
+         
+         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '40px', height: '20px' }}>
+               <input 
+                 type="checkbox" 
+                 checked={hideOutOfStock} 
+                 onChange={() => setHideOutOfStock(!hideOutOfStock)} 
+                 style={{ opacity: 0, width: 0, height: 0 }}
+               />
+               <span style={{ 
+                 position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, 
+                 backgroundColor: hideOutOfStock ? 'var(--miranda-primary)' : '#ccc',
+                 transition: '.4s', borderRadius: '20px' 
+               }}>
+                 <span style={{
+                    position: 'absolute', content: '""', height: '14px', width: '14px', left: hideOutOfStock ? '22px' : '3px', bottom: '3px',
+                    backgroundColor: 'white', transition: '.4s', borderRadius: '50%'
+                 }}></span>
+               </span>
+            </label>
+            <span style={{ fontSize: '0.85rem', color: hideOutOfStock ? 'var(--miranda-primary)' : 'var(--text-muted)' }}>Solo con stock</span>
+         </div>
       </div>
 
       {/* Carrusel de Promociones */}

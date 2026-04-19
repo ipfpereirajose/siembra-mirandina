@@ -8,6 +8,7 @@ const Home = ({ cart, setCart }) => {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [hideOutOfStock, setHideOutOfStock] = useState(false)
   const navigate = useNavigate()
 
   // Cargar carrito desde localStorage al iniciar
@@ -75,7 +76,11 @@ const Home = ({ cart, setCart }) => {
     }
   }
 
-  const productosFiltrados = productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+  let productosFiltrados = productos.filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+  
+  if (hideOutOfStock) {
+    productosFiltrados = productosFiltrados.filter(p => (p.inventario?.stock_disponible || 0) > 0)
+  }
 
   return (
     <div className="home-container" style={{ padding: '2rem 0' }}>
@@ -144,15 +149,39 @@ const Home = ({ cart, setCart }) => {
           <p className="text-muted" style={{marginTop:'0.5rem'}}>Para conocer precios con descuento y comprar, ingresa al portal.</p>
         </div>
         
-        {/* Buscador Rápido */}
-        <input 
-          type="text" 
-          placeholder="🔍 Buscar por nombre o SKU..." 
-          className="glass-input"
-          style={{ width: '300px', padding: '12px 20px', borderRadius: '20px' }}
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-        />
+        {/* Buscador Rápido y Filtro */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '40px', height: '20px' }}>
+                 <input 
+                   type="checkbox" 
+                   checked={hideOutOfStock} 
+                   onChange={() => setHideOutOfStock(!hideOutOfStock)} 
+                   style={{ opacity: 0, width: 0, height: 0 }}
+                 />
+                 <span style={{ 
+                   position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, 
+                   backgroundColor: hideOutOfStock ? 'var(--miranda-primary)' : '#ccc',
+                   transition: '.4s', borderRadius: '20px' 
+                 }}>
+                   <span style={{
+                      position: 'absolute', content: '""', height: '14px', width: '14px', left: hideOutOfStock ? '22px' : '3px', bottom: '3px',
+                      backgroundColor: 'white', transition: '.4s', borderRadius: '50%'
+                   }}></span>
+                 </span>
+              </label>
+              <span style={{ fontSize: '0.85rem', color: hideOutOfStock ? 'var(--miranda-primary)' : 'var(--text-muted)' }}>Solo con stock</span>
+          </div>
+
+          <input 
+            type="text" 
+            placeholder="🔍 Buscar por nombre o SKU..." 
+            className="glass-input"
+            style={{ width: '300px', padding: '12px 20px', borderRadius: '20px' }}
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
 
       {loading ? (
