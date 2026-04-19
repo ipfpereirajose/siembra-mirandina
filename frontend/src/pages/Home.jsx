@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Catalog.css'
+import './Home.css'
 import ProductCard from '../components/ProductCard'
 
 const Home = ({ cart, setCart }) => {
@@ -111,10 +112,10 @@ const Home = ({ cart, setCart }) => {
           zIndex: -1
         }}></div>
 
-        <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', color: '#ffffff', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
+        <h1 className="hero-title" style={{ color: '#ffffff', textShadow: '0 2px 10px rgba(0,0,0,0.8)', lineHeight: 1.1 }}>
            {heroSlides[currentSlide].title}
         </h1>
-        <p className="text-muted" style={{ fontSize: '1.25rem', maxWidth: '600px', textShadow: '0 1px 5px rgba(0,0,0,0.8)', color: '#fff' }}>
+        <p className="hero-desc" style={{ maxWidth: '600px', textShadow: '0 1px 5px rgba(0,0,0,0.8)', color: '#fff', marginTop: '1rem' }}>
           {heroSlides[currentSlide].desc}
         </p>
         {/* Botonera de Acción Primaria */}

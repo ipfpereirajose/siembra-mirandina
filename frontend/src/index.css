@@ -125,3 +125,31 @@ h1, h2, h3 {
   text-transform: uppercase;
   margin-bottom: 0.5rem;
 }
+
+/* --- RESPONSIVENESS SECTION --- */
+
+/* Movil / Tablets Pequeñas ( < 768px ) */
+@media (max-width: 768px) {
+  :root {
+    --container-padding: 1rem;
+  }
+  
+  h1 { font-size: 2rem !important; }
+  h2 { font-size: 1.6rem !important; }
+  h3 { font-size: 1.3rem !important; }
+
+  .glass-panel, .glass-card {
+    padding: 1.25rem !important;
+  }
+
+  body {
+    padding: 0 0.5rem;
+  }
+}
+
+/* Tablets ( < 1024px ) */
+@media (max-width: 1024px) {
+  .hero-section {
+    padding: 2rem 1.5rem !important;
+  }
+}

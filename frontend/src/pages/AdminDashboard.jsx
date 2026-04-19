@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import './Catalog.css' // Reutilizar paleta general
+import './Catalog.css'
+import './AdminDashboard.css'
 
 const AdminDashboard = ({ user }) => {
   const [stats, setStats] = useState(null)
@@ -114,7 +114,7 @@ const AdminDashboard = ({ user }) => {
       </div>
 
       {/* BLOQUE ESTADÍSTICAS Y VENTAS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '2rem', marginBottom: '3rem' }}>
+      <div className="admin-grid">
          <div className="glass-panel" style={{ padding: '2rem' }}>
             <h3>Ventas Consolidadas</h3>
             <div style={{ width: '100%', height: 350 }}>
@@ -212,7 +212,8 @@ const AdminDashboard = ({ user }) => {
 
       <div className="glass-panel" style={{ padding: '2rem' }}>
          <h3>Inventario Centralizado</h3>
-         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+         <div className="table-responsive">
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
             <thead>
                <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--border-glass)' }}>
                   <th style={{ padding: '12px' }}>Producto</th>

@@ -1,0 +1,53 @@
+/* Estilos específicos para la Home con soporte móvil */
+
+.hero-title {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.hero-desc {
+  font-size: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2.5rem 1.5rem !important;
+    text-align: center;
+    border-radius: 0 !important; /* Aprovechar todo el ancho en movil */
+  }
+
+  .hero-title {
+    font-size: 1.8rem !important;
+    margin-bottom: 0.8rem;
+  }
+
+  .hero-desc {
+    font-size: 1rem !important;
+    margin: 0 auto;
+  }
+
+  .hero-section .btn-primary, 
+  .hero-section .btn-outline {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.catalog-header {
+  padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+  .catalog-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  
+  .catalog-header h2 {
+    margin-bottom: 1rem;
+  }
+
+  .glass-input {
+    width: 100% !important;
+  }
+}

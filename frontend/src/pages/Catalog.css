@@ -13,11 +13,6 @@
 }
 
 .loading-state {
-  text-align: center;
-  padding: 4rem;
-  font-size: 1.25rem;
-  color: var(--arco-primary);
-  font-weight: 600;
   animation: pulse 2s infinite;
 }
 
@@ -25,4 +20,19 @@
   0% { opacity: 0.6; }
   50% { opacity: 1; }
   100% { opacity: 0.6; }
+}
+
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: 1fr; /* Una sola columna en movil */
+    padding: 0 1rem;
+  }
+
+  .catalog-header h1 {
+    font-size: 2rem !important;
+  }
+
+  .catalog-container {
+    padding: 1rem 0;
+  }
 }
